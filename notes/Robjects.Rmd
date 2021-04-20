@@ -1,0 +1,64 @@
+---
+title: R的物件
+author: 陳紹慶
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+本篇摘要：介紹R的物件，以及Rmarkdown的編輯技巧
+
+## R chunk的輸出效果
+
+> 檢查這份文件的R markdown源始檔，就能看到各式R chunk顯示設定
+
+R markdown文件內置入R chunk，就能在該位置輸出程式碼以及執行結果。使用者可以調整R chunk的參數，自訂輸出效果。例如以下的R chunk只有輸出程式碼，但是不會執行這行程式：
+
+```{r show_code, eval=FALSE, include=TRUE}
+summary(cars)
+```
+
+只顯示以上程式碼執行結果，不顯示程式碼，如同以下的R chunk
+
+```{r cars, echo=FALSE}
+summary(cars)
+```
+
+## 認識物件
+
+常見的資料單元有文字(word)、數值(numbers)、變項(variables)、表單(data sheet)等等；資料分析的方法例如計算平均數(mean)，執行統計檢定(t test)等都可定義為函式(function)。所有單元與函式在R之中都有共同的名字：**物件(objects)**。任何資料單元與函式都要宣告為物件，才能編輯為R程式碼，在R環境中使用。
+
+在R console中逐行執行以下的程式碼：
+
+```
+my_name <- "CSC" ## 文字
+x <- 5 ## 數值
+y <- x*x ##數值運算
+my_story <- paste(my_name,"is a teacher.") ## 文字處理函式
+```
+
+執行完畢，查看`Environment`視窗之內增加了什麼物件？以及物件的內容。
+
+一個物件可以包含另一個物件，或者以另一個物件做為處理材料。例如變項是文字的集合，或數值的集合；表單是變項的集合；函式預設的參數必須是指定型態的物件。
+
+執行以下的R chunk，完成後查看`Environment`視窗的內容，也在R console裡輸入物件名稱，查看輸出的結果。
+
+```{r}
+x1 <- rnorm(n = 10, mean = 100) ## 製造虛擬變項x1，有10個數值
+x2 <- rnorm(n = 10, mean = 120) ## 製造虛擬變項x2，有10個數值
+data <- data.frame(x1,x2)       ## 組合x1與x2，存於表單物件data
+means <- colMeans(data)       ## 計算表單內的變項平均值
+results <- t.test(x = data$x1, y = data$x2, var.equal = TRUE) ## 執行變項x1與變項x2的獨立t檢定
+```
+
+以下輸出變項平均值與t檢定的結果：
+
+```{r}
+means
+```
+```{r}
+results
+```
+

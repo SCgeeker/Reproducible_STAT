@@ -1,0 +1,676 @@
+---
+title: "03-ggplot-video"
+author: "Sau-Chin Chen"
+date: "2021/4/19"
+output: 
+  html_document:
+    toc: true
+---
+
+# 單元目標
+
+-   學習R基本繪圖函式
+-   ggplot繪圖函式
+
+## 單元範例設定
+
+```{r setup, results = 'hide', warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# 本章需要套件
+library(tidyverse)
+library(dataskills)
+library(plotly)  # 製造互動式統計圖
+library(cowplot)  # 製造組合式統計圖
+set.seed(30250) # 設定隨機種子
+```
+
+## 檢視變項種類 {#vartypes}
+
+```{r pets, echo=TRUE, message=FALSE, warning=FALSE}
+data("pets")
+glimpse(pets)
+```
+
+```{r}
+levels(pets$pet)
+levels(pets$country)
+```
+
+檢視pets的六個變項的資料型態，屬於那種變項尺度？(建議暫停影片)
+
+-   連續變項 **Continuous** variables：
+
+-   間斷/類別變項 **Discrete** (or categorical) variables:
+
+    -   名義變項 **nominal** variables:
+    -   次序變項 **ordinal** variables:
+
+# 基本繪圖
+
+R基本繪圖函式 `plot()` 
+思維：在即定框架內一體成形
+用途：初窺資料模式；規劃分析策略
+
+### 柱狀圖
+
+```{r fig.cap="plot() with categorical x"}
+plot(x = pets$pet)
+```
+
+柱狀圖告訴我們的事:
+
+### 箱型圖
+
+```{r}
+plot(x = pets$pet, y = pets$score)
+```
+
+箱型圖告訴我們的事:
+
+### 散佈圖
+
+```{r}
+plot(x = pets$age, y = pets$weight)
+```
+
+散佈圖告訴我們的事:
+
+### 直方圖
+
+```{r}
+hist(pets$score, breaks = 20)
+```
+
+直方圖告訴我們的事:
+
+改變breaks的數值，觀察輸出直方圖的變化。
+
+# ggplot運用示範
+
+思維：繪圖如製作蛋糕，一層一層堆疊素材
+用途：製作展示用的統計圖
+
+## 預備畫布
+
+```{r}
+ggplot()
+```
+
+## 設定軸線
+
+```{r}
+mapping <- aes(x = pet, 
+               y = score, 
+               colour = country, 
+               fill = country)
+ggplot(data = pets, mapping = mapping)
+```
+
+## 繪製統計圖
+
+```{r}
+ggplot(pets, aes(pet, score, colour = country, fill = country)) +
+  geom_violin(alpha = 0.5) +
+  labs(x = "Pet type",
+       y = "Score on an Important Test",
+       colour = "Country of Origin",
+       fill = "Country of Origin",
+       title = "My first plot!") +
+  theme_bw(base_size = 15)
+```
+
+**建議測試：**
+- 改變`alpha`,`base_size`的數值，觀察輸出效果
+- 更改`labs()`各參數的英文詞，觀察輸出效果
+
+
+## ggplot繪製基本統計圖
+
+### 柱狀圖 {#geom_bar}
+
+適用:類別變項資料計數。
+
+對照基本繪圖：柱狀圖
+
+```{r barplot, fig.cap="Bar plot"}
+ggplot(pets, aes(pet)) +
+  geom_bar()
+```
+
+### 箱型圖 {#geom_boxplot}
+
+
+適用:連續變項資料次數分佈，依類別變項分組呈現。
+
+對照基本繪圖：箱型圖
+
+```{r boxplot, fig.cap="Box plot"}
+
+ggplot(pets, aes(pet, score, fill=pet)) +
+  geom_boxplot(alpha = 0.5)
+
+```
+
+### 散佈圖 {#geom_point}
+
+Scatter plots are a good way to represent the relationship between two continuous variables.
+
+適用:呈現來自相同的觀察單位，兩種連續變項資料的次數分佈。
+
+對照基本繪圖：散佈圖
+
+```{r scatter, fig.cap="Scatter plot using geom_point()"}
+
+ggplot(pets, aes(age, score, color = pet)) +
+  geom_point()
+
+```
+
+
+### 直方圖 {#geom_histogram}
+
+
+適用:呈現一種連續變項資料的次數分佈；可判別變異趨勢；樣本數越多越清楚。
+
+對照基本繪圖：直方圖
+
+
+```{r histogram, fig.cap="Histogram"}
+
+ggplot(pets, aes(score)) +
+  geom_histogram(binwidth = 5, fill = "white", color = "black")
+  
+```
+
+搭配參數`fill`與`position`，一張直方圖可呈現分組資料分佈。
+
+```{r histogram-grouped, fig.cap="Grouped Histogram"}
+
+ggplot(pets, aes(score, fill=pet)) +
+  geom_histogram(binwidth = 5, alpha = 0.5, 
+                 position = "dodge")
+  
+```
+
+
+**建議測試**
+
+將參數`position`的值改成"identity", "fill", "dodge", 或 "stack"，觀察輸出效果。
+
+(分開錄影)
+
+### 分佈密度圖 {#geom_density}
+
+
+適用:呈現一種連續變項資料的次數分佈；可判別變異趨勢；樣本數上千越清楚。
+
+```{r density, fig.cap="Density plot"}
+
+ggplot(pets, aes(score)) +
+  geom_density()
+
+```
+
+
+搭配參數`group`,`fill`與`color`，一張分佈密度圖可呈現分組資料分佈。
+
+
+```{r density-grouped, fig.cap="Grouped density plot"}
+
+ggplot(pets, aes(score, fill = pet)) +
+  geom_density(alpha = 0.5)
+
+```
+
+```{block, type="try"}
+Try changing the `alpha` argument to figure out what it does.
+```
+
+**建議測試**  
+改變`alpha`的數值，觀察輸出效果
+
+### 次數折線圖 {#geom_freqpoly}
+
+適用:呈現一種連續變項資料的次數分佈；可判別變異趨勢；樣本數上千越清楚。
+
+
+```{r freqpoly, fig.cap="Frequency ploygon plot"}
+
+ggplot(pets, aes(score, color = pet)) +
+  geom_freqpoly(binwidth = 5)
+  
+```
+
+```{block, type="try"}
+Try changing the `binwidth` argument to 5 and 0.1. How do you figure out the right value?
+```
+
+
+**建議測試**  
+改變`binwidth`的數值，觀察輸出效果
+
+
+### 分組統計柱狀圖 {#geom_col}
+
+
+適用:使用函式`stat_summary`, `geom_bar`, `geom_col`, `geom_col`，將分組統計值轉化為柱狀圖的元素。
+
+
+```{r colplot, fig.cap="Column plot"}
+
+ggplot(pets, aes(pet, score, fill=pet)) +
+  stat_summary(fun = mean, geom = "col", alpha = 0.5) + 
+  stat_summary(fun.data = mean_se, geom = "errorbar",
+               width = 0.25) +
+  coord_cartesian(ylim = c(80, 120))
+
+```
+
+
+**建議測試**  
+改變`coord_cartesian`的數值，觀察輸出效果
+
+
+
+### 小提琴圖 {#geom_violin}
+
+
+小提琴圖是比箱型圖更直觀的資料次數分佈圖，非常態資料分佈一目了然。
+
+```{r violin, fig.cap="Violin plot"}
+
+ggplot(pets, aes(pet, score, fill=pet)) +
+  geom_violin(draw_quantiles = .5,
+              trim = FALSE, alpha = 0.5,)
+
+```
+
+**建議測試**  
+改變`draw_quantile`的數值，從0.1到0.9皆可，觀察輸出效果
+
+
+### 組間區間 {#geom_interval}
+
+分組描述統計的重要資訊是集中量數(平均值)與誤差範圍(標準差、信賴區間)。以下分組箱形圖的箱子高度，代表距離平均值一個標準差的數值。
+
+```{r}
+ggplot(pets, aes(pet, score, color=pet)) +
+  stat_summary(fun.data = mean_se, geom = "crossbar") +
+  stat_summary(fun.min = function(x) mean(x) - sd(x),
+               fun.max = function(x) mean(x) + sd(x),
+               geom = "errorbar", width = 0) +
+  theme(legend.position = "none") # gets rid of the legend
+```
+
+以下R程式碼計算分組平均值與標準誤(standard error)。
+
+```{r}
+pets_sum <- pets %>%
+  group_by(pet) %>%
+  summarize(mean = mean(score), se = sd(score)/sqrt(n()))
+petsgg <- ggplot(pets_sum, aes(pet, mean, 
+                      ymin = mean-se, 
+                      ymax = mean+se))
+```
+
+以箱形呈現標準誤區間
+
+```{r}
+petsgg + geom_crossbar()
+```
+
+以誤差線呈現標準誤區間
+
+```{r}
+petsgg + geom_errorbar()
+```
+
+以直線呈現標準誤區間
+
+```{r}
+petsgg + geom_linerange()
+```
+
+以點線呈現標準誤區間
+
+```{r}
+petsgg + geom_pointrange()
+```
+
+
+### 迴歸線 {#geom_smooth}
+
+散佈圖包含不只一組資料時，加上迴歸線能呈現分組的資料分佈趨勢。
+
+```{r line, fig.cap="Line plot using geom_smooth()"}
+ggplot(pets, aes(age, score, color = pet)) +
+  geom_smooth(formula = y ~ x, method="lm")
+```
+
+
+**建議測試**  
+查詢`geom_smooth`有關`method`的說明，了解還有那些選項，觀察各種選項的輸出效果
+
+
+
+## ggplot自訂統計圖
+
+ggplot的自訂函式，能改變統計圖的標籤文字、配色、以及畫布主題。
+
+### 自訂標籤 {#custom-labels}
+
+方法一：使用`labs()`一次設定所有標籤
+
+```{block}
+ggplot(x_vs_y, aes(x, y)) +
+  geom_smooth(method="lm") +
+  labs(title = "My Plot Title",
+       x = "The X Variable",
+       y = "The Y Variable")
+```
+
+```{r}
+ggplot(pets, aes(age, score, color = pet)) +
+  geom_smooth(formula = y ~ x, method="lm") +
+  labs(title = "Pet score with Age",
+       x = "Age (in Years)",
+       y = "score Score",
+       color = "Pet Type")
+```
+
+方法二：使用`ggtitle`,`xlab()`,`ylab()`設定各部位標籤
+
+```{block}
+ggplot(x_vs_y, aes(x, y)) +
+  geom_smooth(method="lm") +
+  ggtitle("My Plot Title") +
+  xlab("The X Variable") +
+  ylab("The Y Variable")
+```
+
+```{r}
+ggplot(pets, aes(age, score, color = pet)) +
+  geom_smooth(formula = y ~ x, method="lm") +
+  ggtitle("Pet score with Age") +
+  xlab("Age (in Years)") +
+  ylab("score Score") +
+  scale_color_discrete(name = "Pet Type")
+```
+
+### 自訂配色 {#custom-colours}
+
+ggplot提供`scale_colour_manual()`,`scale_fill_manual()`等函式設定線條或區塊的配色，配色選項可參考[Colours chapter in Cookbook for R](http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/)。建議更改下圖的配色數值，觀察輸出效果。
+
+```{r line-labels, fig.cap="Set custom colour"}
+ggplot(pets, aes(pet, score, colour = pet, fill = pet)) +
+  geom_violin() +
+  scale_color_manual(values = c("darkgreen", "dodgerblue", "orange")) +
+  scale_fill_manual(values = c("#CCFFCC", "#BBDDFF", "#FFCC66"))
+```
+
+### 自訂畫布主題 {#ggtheme}
+
+下圖是使用ggplot內建的主題`minimal`呈現的效果。
+
+```{r}
+ggplot(pets, aes(age, score, color = pet)) +
+  geom_smooth(formula = y ~ x, method="lm") +
+  theme_minimal(base_size = 18)
+```
+
+如果有特殊需求，使用者可以自建主題，以下是Lisa DeBrunie提供的vampire theme。如果你想建立個人風格的主題，可以嘗試更改各部份配色與字型大小，建立符合你的統計圖主題。
+
+```{r}
+vampire_theme <- theme(
+  rect = element_rect(fill = "black"),
+  panel.background = element_rect(fill = "black"),
+  text = element_text(size = 20, colour = "white"),
+  axis.text = element_text(size = 16, colour = "grey70"),
+  line = element_line(colour = "white", size = 2),
+  panel.grid = element_blank(),
+  axis.line = element_line(colour = "white"),
+  axis.ticks = element_blank(),
+  legend.position = "top"
+)
+
+theme_set(vampire_theme)
+
+ggplot(pets, aes(age, score, color = pet)) +
+  geom_smooth(formula = y ~ x, method="lm")
+```
+
+### 匯出統計圖 {#ggsave}
+
+有需要匯出製作好的統計圖，將ggplot存入物件，使用`ggsave()`使定匯出檔案名稱即可。如果你要指定輸出圖像的寛度與高度，`ggsave()`可設定統計圖的`width` 與 `height`，單位有"in", "cm",  "mm"。
+
+```{r ggsave-example, eval = FALSE}
+
+box <- ggplot(pets, aes(pet, score, fill=pet)) +
+  geom_boxplot(alpha = 0.5)
+
+violin <- ggplot(pets, aes(pet, score, fill=pet)) +
+  geom_violin(alpha = 0.5)
+
+ggsave("demog_violin_plot.png", width = 5, height = 7)
+
+ggsave("demog_box_plot.jpg", plot = box, width = 5, height = 7)
+
+```
+
+
+```{block, type="info"}
+The file type is set from the filename suffix, or by 
+specifying the argument `device`, which can take the following values: 
+"eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg" or "wmf".
+```
+
+## ggplot複合統計圖
+
+
+
+### 結合小提琴圖與箱形圖
+
+箱形圖能用來標記中位數與四分位區間。
+
+```{r violinbox, fig.cap="Violin-box plot"}
+
+ggplot(pets, aes(pet, score, fill = pet)) +
+  geom_violin(show.legend = FALSE) + 
+  geom_boxplot(width = 0.2, fill = "white", 
+               show.legend = FALSE)  ## 通常不需顯示標籤
+
+```
+
+
+
+### 結合小提琴圖與區間線
+
+ `stat_summary()` 內置的函式將在第七單元學習。
+
+```{r stat-summary, fig.cap="Point-range plot using stat_summary()"}
+
+ggplot(pets, aes(pet, score, fill=pet)) +
+  geom_violin(trim = FALSE, alpha = 0.5) +
+  stat_summary(
+    fun = mean,
+    fun.max = function(x) {mean(x) + sd(x)},
+    fun.min = function(x) {mean(x) - sd(x)},
+    geom="pointrange"
+  )
+```
+
+### 結合小提琴圖與散佈圖
+
+當樣本資料數目不多， `geom_jitter` 可用資料點顯示資料分佈。
+
+```{r violin-jitter, fig.cap="Violin-jitter plot"}
+
+# sample_n chooses 50 random observations from the dataset
+ggplot(sample_n(pets, 50), aes(pet, score, fill=pet)) +
+  geom_violin(
+    trim = FALSE,
+    draw_quantiles = c(0.25, 0.5, 0.75), 
+    alpha = 0.5
+  ) + 
+  geom_jitter(
+    width = 0.15, # points spread out over 15% of available width
+    height = 0, # do not move position on the y-axis
+    alpha = 0.5, 
+    size = 3
+  )
+
+```
+
+### 散佈圖內置廻歸線
+
+當分資料分組不多，如五組之內，在散佈圖內繪製迴歸線有助了解資料分佈。
+
+```{r scatter-line, fig.cap="Scatter-line plot"}
+
+ggplot(sample_n(pets, 50), aes(age, weight, colour = pet)) +
+  geom_point() +
+  geom_smooth(formula = y ~ x, method="lm")
+
+```
+
+### 並列統計圖 {#cowplot}
+
+
+[`cowplot`](https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html)套件可並列兩個以上ggplot，在同一張畫布之內。如以下`plot_grid()`的示範。
+
+```{r cowplot, eval=FALSE, fig.cap="Grid of plots using cowplot", message=FALSE, include=FALSE}
+
+gg <- ggplot(pets, aes(pet, score))
+nolegend <- theme(legend.position = 0)
+
+vp <- gg + geom_violin(aes(alpha = 0.5, colour = pet) ) + nolegend +
+  ggtitle("Violin Plot")
+bp <- gg + geom_boxplot(aes(alpha = 0.5, colour = pet)) + nolegend +
+  ggtitle("Box Plot")
+cp <- gg + stat_summary(fun = mean, geom = "col", fill = "white") + nolegend +
+  ggtitle("Column Plot")
+dp <- ggplot(pets, aes(score, colour = pet)) + 
+  geom_density() + nolegend +
+  ggtitle("Density Plot")
+
+plot_grid(vp, bp, cp, dp, labels = LETTERS[1:4]) 
+
+```
+
+## 疊加間斷變數的組合統計圖 {#overlap}
+
+### 調整透明度
+
+資料點太多時，使用`alpha`調整散佈圖資料點的透明度，運用`colour`區分組別。
+
+```{r overlap-alpha, fig.cap="Deal with overlapping data using transparency"}
+
+ggplot(pets, aes(age, score, colour = pet)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(formula = y ~ x, method="lm")
+
+```
+
+### 點面積散佈圖 {#geom_count}
+
+資料點太多時，使用`geom_count()`調整散佈圖資料點的面積，表現各資料點的累積次數。
+
+```{r overlap-size, fig.cap="Deal with overlapping data using geom_count()"}
+
+ggplot(pets, aes(age, score, colour = pet)) +
+  geom_count()
+```
+
+另一種方法是使用色彩突顯每個資料點的累積次數。`scale_color_viridis_c()`是[viridis package](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html)套件的函式，可讓連續變項的數值，轉換為對應的色彩。
+
+```{r overlap-colour, fig.cap="Deal with overlapping data using dot colour"}
+
+pets %>%
+  group_by(age, score) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  ggplot(aes(age, score, color=count)) +
+  geom_point(size = 2) +
+  scale_color_viridis_c()
+
+```
+
+
+### 相關熱點圖 {#geom_tile}
+
+相關熱點圖用在呈現兩種類別變項分佈的相關係。繪製熱點圖首先要轉換資料，以下用到的 `gather()`將在第四及第五單元學習。
+
+```{r}
+heatmap <- pets %>%
+  select_if(is.numeric) %>% # get just the numeric columns
+  cor() %>% # create the correlation matrix
+  as_tibble(rownames = "V1") %>% # make it a tibble
+  gather("V2", "r", 2:ncol(.)) # wide to long (V2)
+```
+
+轉換後的資料就能運用`ggplot`繪製基本統計圖,再使用`geom_tile()`轉換為統計圖。
+
+```{r heatmap, fig.cap="Heatmap using geom_tile()"}
+ggplot(heatmap, aes(V1, V2, fill=r)) +
+  geom_tile() +
+  scale_fill_viridis_c()
+```
+
+
+## 疊加連續變數的組合統計圖
+
+當統計圖只呈現兩種連續變項，過多資料點無法看出重要資訊。
+
+```{r overplot-point, fig.cap="Overplotted data"}
+ggplot(pets, aes(age, score)) +
+  geom_point()
+```
+
+### 2維密度圖 {#geom_density2d}
+
+運用 `geom_density2d()` 就能產生像等高線的空照密度圖。
+
+```{r density2d, fig.cap="Contour map with geom_density2d()"}
+ggplot(pets, aes(age, score)) +
+  geom_density2d()
+```
+
+使用 `stat_density_2d(aes(fill = ..level..), geom = "polygon")` 可加上配色，強調次數密度差異。
+
+```{r density2d-fill, fig.cap="Heatmap-density plot"}
+ggplot(pets, aes(age, score)) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon") +
+  scale_fill_viridis_c()
+```
+
+### 2維直方圖 {#geom_bin2d}
+
+使用 `geom_bin2d()`可繪製像素化的密度圖。設定 `binwidth` 決定每塊像素的範圍。
+
+```{r bin2d, fig.cap="Heatmap of bin counts"}
+ggplot(pets, aes(age, score)) +
+  geom_bin2d(binwidth = c(1, 5))
+```
+
+### 蜂巢熱點圖 {#geom_hex}
+
+使用 `geomhex()` 可繪製蜂巢化的密度圖。 調整 `binwidth`, `xlim()`, `ylim()` 可決定蜂巢的格局
+
+```{r overplot-hex, fig.width=6, fig.height=5, fig.cap="Hexagonal heatmap of bin counts"}
+ggplot(pets, aes(age, score)) +
+  geom_hex(binwidth = c(1, 5))
+```
+
+
+## 互動式統計圖 {#plotly}
+
+ `plotly`套件用來產生互動式統計圖。 運用 `ggplotly()`讓ggplot物件動起來。
+
+```{r plotly, message = FALSE, fig.cap="Interactive graph using plotly"}
+
+demog_plot <- ggplot(pets, aes(age, score, fill=pet)) +
+  geom_point() +
+  geom_smooth(formula = y~x, method = lm)
+
+ggplotly(demog_plot)
+
+```
