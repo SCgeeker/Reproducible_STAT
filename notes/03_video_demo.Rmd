@@ -4,13 +4,14 @@ author: "Sau-Chin Chen"
 date: "2021/4/19"
 output: 
   html_document:
+    css: custom.css
     toc: true
 ---
 
-# 單元目標
+# 學習目標
 
--   學習R基本繪圖函式
--   ggplot繪圖函式
+- R基本繪圖函式
+- ggplot繪圖函式
 
 ## 單元範例設定
 
@@ -38,12 +39,12 @@ levels(pets$country)
 
 檢視pets的六個變項的資料型態，屬於那種變項尺度？(建議暫停影片)
 
--   連續變項 **Continuous** variables：
+-   連續變項 **Continuous** variables："score", "age","weight"
 
--   間斷/類別變項 **Discrete** (or categorical) variables:
+-   間斷/類別變項 **Discrete** (or categorical) variables: "pet","country"
 
-    -   名義變項 **nominal** variables:
-    -   次序變項 **ordinal** variables:
+    -   名義變項 **nominal** variables:"pet","country"
+    -   次序變項 **ordinal** variables: NA
 
 # 基本繪圖
 
@@ -90,13 +91,14 @@ hist(pets$score, breaks = 20)
 思維：繪圖如製作蛋糕，一層一層堆疊素材
 用途：製作展示用的統計圖
 
+
 ## 預備畫布
 
 ```{r}
 ggplot()
 ```
 
-## 設定軸線
+## 設定基本佈局
 
 ```{r}
 mapping <- aes(x = pet, 
@@ -147,13 +149,11 @@ ggplot(pets, aes(pet)) +
 ```{r boxplot, fig.cap="Box plot"}
 
 ggplot(pets, aes(pet, score, fill=pet)) +
-  geom_boxplot(alpha = 0.5)
+  geom_boxplot(alpha = 1)
 
 ```
 
 ### 散佈圖 {#geom_point}
-
-Scatter plots are a good way to represent the relationship between two continuous variables.
 
 適用:呈現來自相同的觀察單位，兩種連續變項資料的次數分佈。
 
@@ -162,7 +162,7 @@ Scatter plots are a good way to represent the relationship between two continuou
 ```{r scatter, fig.cap="Scatter plot using geom_point()"}
 
 ggplot(pets, aes(age, score, color = pet)) +
-  geom_point()
+  geom_point(alpha=0.5)
 
 ```
 
@@ -197,7 +197,6 @@ ggplot(pets, aes(score, fill=pet)) +
 
 將參數`position`的值改成"identity", "fill", "dodge", 或 "stack"，觀察輸出效果。
 
-(分開錄影)
 
 ### 分佈密度圖 {#geom_density}
 
@@ -249,6 +248,23 @@ Try changing the `binwidth` argument to 5 and 0.1. How do you figure out the rig
 **建議測試**  
 改變`binwidth`的數值，觀察輸出效果
 
+### 小提琴圖 {#geom_violin}
+
+
+小提琴圖是比箱型圖更直觀的資料次數分佈圖，非常態資料分佈一目了然。
+
+```{r violin, fig.cap="Violin plot"}
+
+ggplot(pets, aes(pet, score, fill=pet)) +
+  geom_violin(draw_quantiles = .5,
+              trim = FALSE, alpha = 0.5,)
+
+```
+
+**建議測試**  
+改變`draw_quantile`的數值，從0.1到0.9皆可，觀察輸出效果
+
+
 
 ### 分組統計柱狀圖 {#geom_col}
 
@@ -270,23 +286,6 @@ ggplot(pets, aes(pet, score, fill=pet)) +
 **建議測試**  
 改變`coord_cartesian`的數值，觀察輸出效果
 
-
-
-### 小提琴圖 {#geom_violin}
-
-
-小提琴圖是比箱型圖更直觀的資料次數分佈圖，非常態資料分佈一目了然。
-
-```{r violin, fig.cap="Violin plot"}
-
-ggplot(pets, aes(pet, score, fill=pet)) +
-  geom_violin(draw_quantiles = .5,
-              trim = FALSE, alpha = 0.5,)
-
-```
-
-**建議測試**  
-改變`draw_quantile`的數值，從0.1到0.9皆可，觀察輸出效果
 
 
 ### 組間區間 {#geom_interval}
@@ -540,12 +539,12 @@ ggplot(sample_n(pets, 50), aes(age, weight, colour = pet)) +
 
 ```{r cowplot, eval=FALSE, fig.cap="Grid of plots using cowplot", message=FALSE, include=FALSE}
 
-gg <- ggplot(pets, aes(pet, score))
+gg <- ggplot(pets, aes(pet, score, colour = pet))
 nolegend <- theme(legend.position = 0)
 
-vp <- gg + geom_violin(aes(alpha = 0.5, colour = pet) ) + nolegend +
+vp <- gg + geom_violin(alpha = 0.5) + nolegend +
   ggtitle("Violin Plot")
-bp <- gg + geom_boxplot(aes(alpha = 0.5, colour = pet)) + nolegend +
+bp <- gg + geom_boxplot(alpha = 0.5) + nolegend +
   ggtitle("Box Plot")
 cp <- gg + stat_summary(fun = mean, geom = "col", fill = "white") + nolegend +
   ggtitle("Column Plot")
@@ -553,9 +552,11 @@ dp <- ggplot(pets, aes(score, colour = pet)) +
   geom_density() + nolegend +
   ggtitle("Density Plot")
 
-plot_grid(vp, bp, cp, dp, labels = LETTERS[1:4]) 
+plot_grid(vp, bp, cp, dp, labels = LETTERS[1:4])
 
 ```
+
+> 註：由於R環境設定問題，示範網頁無法展示並列統計圖。
 
 ## 疊加間斷變數的組合統計圖 {#overlap}
 
@@ -592,27 +593,6 @@ pets %>%
   geom_point(size = 2) +
   scale_color_viridis_c()
 
-```
-
-
-### 相關熱點圖 {#geom_tile}
-
-相關熱點圖用在呈現兩種類別變項分佈的相關係。繪製熱點圖首先要轉換資料，以下用到的 `gather()`將在第四及第五單元學習。
-
-```{r}
-heatmap <- pets %>%
-  select_if(is.numeric) %>% # get just the numeric columns
-  cor() %>% # create the correlation matrix
-  as_tibble(rownames = "V1") %>% # make it a tibble
-  gather("V2", "r", 2:ncol(.)) # wide to long (V2)
-```
-
-轉換後的資料就能運用`ggplot`繪製基本統計圖,再使用`geom_tile()`轉換為統計圖。
-
-```{r heatmap, fig.cap="Heatmap using geom_tile()"}
-ggplot(heatmap, aes(V1, V2, fill=r)) +
-  geom_tile() +
-  scale_fill_viridis_c()
 ```
 
 
@@ -658,6 +638,28 @@ ggplot(pets, aes(age, score)) +
 ```{r overplot-hex, fig.width=6, fig.height=5, fig.cap="Hexagonal heatmap of bin counts"}
 ggplot(pets, aes(age, score)) +
   geom_hex(binwidth = c(1, 5))
+```
+
+
+
+### 相關熱點圖 {#geom_tile}
+
+相關熱點圖用在呈現兩種類別變項分佈的相關係。繪製熱點圖首先要轉換資料，以下用到的 `gather()`將在第四及第五單元學習。
+
+```{r}
+heatmap <- pets %>%
+  select_if(is.numeric) %>% # get just the numeric columns
+  cor() %>% # create the correlation matrix
+  as_tibble(rownames = "V1") %>% # make it a tibble
+  gather("V2", "r", 2:ncol(.)) # wide to long (V2)
+```
+
+轉換後的資料就能運用`ggplot`繪製基本統計圖,再使用`geom_tile()`轉換為統計圖。
+
+```{r heatmap, fig.cap="Heatmap using geom_tile()"}
+ggplot(heatmap, aes(V1, V2, fill=r)) +
+  geom_tile() +
+  scale_fill_viridis_c()
 ```
 
 
