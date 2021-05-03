@@ -13,6 +13,8 @@ output:
 - R基本繪圖函式
 - ggplot繪圖函式
 
+- 推薦秘訣表：[Data Visualization with ggplot2](https://raw.githubusercontent.com/rstudio/cheatsheets/master/data-visualization-2.1.pdf)
+
 ## 單元範例設定
 
 ```{r setup, results = 'hide', warning = FALSE, message = FALSE}

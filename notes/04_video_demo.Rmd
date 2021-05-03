@@ -1,0 +1,720 @@
+---
+title: "清理資料"
+author: "陳紹慶"
+date: "2021/4/27"
+output: 
+  html_document:
+    css: custom.css
+    toc: true
+---
+
+
+任何收集資料的工作完成後，必須要先清理資料。
+
+
+# 學習目標
+
+- 認識寬表單與長表單
+- `dplyr`清理資料函式系列
+- 使用管道運算子 `%>%`
+
+- 推薦秘訣表：[Data Import](https://raw.githubusercontent.com/rstudio/cheatsheets/master/data-import.pdf), [Data Transformation](https://raw.githubusercontent.com/rstudio/cheatsheets/master/data-transformation.pdf), [Regular Expressions](https://raw.githubusercontent.com/rstudio/cheatsheets/master/strings.pdf)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dataskills)
+# libraries needed
+library(tidyverse)
+library(readxl)
+
+set.seed(8675309) # makes sure random numbers are reproducible
+```
+
+## 資料表單的格式
+
+- 表單的欄(column)是[變數](https://psyteachr.github.io/glossary/v#variable)(variable)
+- 表單的列(row)是[觀察單位](https://psyteachr.github.io/glossary/o#observation)(observation)
+- 表單的細格(cell)是[數值](https://psyteachr.github.io/glossary/v#value)(value)
+
+**清理前的資料表單**
+
+```{r, echo = FALSE}
+untidy <- data.frame(
+  id = 1:5,
+  score_1 = sample(1:7, 5),
+  score_2 = sample(1:7, 5),
+  score_3 = sample(1:7, 5),
+  rt_1 = rnorm(5, 800, 100) %>% round(),
+  rt_2 = rnorm(5, 800, 100) %>% round(),
+  rt_3 = rnorm(5, 800, 100) %>% round()
+) %>%
+  mutate(
+    total = score_1 + score_2 + score_3,
+    mean_rt = round((rt_1 + rt_2 + rt_3)/3),
+    total_meanRT = paste0(total, " (", mean_rt, ")")
+  ) %>%
+  select(-total, -mean_rt)
+
+```
+
+最後欄位`total_meanRT`混合兩種數值，需要分開為兩個欄位。
+
+`r knitr::kable(untidy)`
+
+**清理後的資料表單**
+
+```{r, echo = FALSE}
+
+tidy <- untidy %>%
+  gather(var, val, score_1:rt_3) %>%
+  separate(var, c("var", "trial")) %>%
+  spread(var, val) %>%
+  separate(total_meanRT, c("total", "mean_rt"), extra = "drop") %>%
+  select(id, trial:score, total, mean_rt)
+  
+```
+
+`r knitr::kable(tidy)`
+
+### 寬表單(wide table)與長表單(long table)
+
+```{r, echo=FALSE}
+wide_data <- data.frame(
+  id = c("A","B"),
+  Q1 = c(1,4),
+  Q2 = c(2,5),
+  Q3 = c(3,6)
+)
+```
+
+`r knitr::kable(wide_data)`
+
+
+```{r, echo=FALSE}
+long_data <- data.frame(
+  id = rep(c("A","B"),each = 3),
+  item = rep(c("Q1","Q2","Q3"),2),
+  value = c(1,2,3,4,5,6)
+)
+```
+
+`r knitr::kable(long_data)`
+
+```{block, type="warning"}
+大部分R函式參數指向**資料表單變項**，因此資料分析採用長表單設定資料變項集合有許多好處。
+```
+
+### 中途練習
+
+將這份寬表單改成長表單
+
+```{r}
+data.frame(
+  id = c("Lisa","Robbie","Steven"),
+  fav_colour = c("red","orange","green"),
+  fav_animal = c("echidna","babirusa","frog")
+)
+```
+
+
+**提示：** `fav_colour`與`fav_animal`分別是兩個問題的反應。
+
+```{r eval=TURE, include=TRUE}
+## 在此寫出你的程式碼
+## 執行前將eval, include的值改成TRUE
+data.frame(
+  id = rep(c("Lisa","Robbie","Steven"),2),
+  questions = rep(c("colour","animal"),each=3),
+  answers = c("red","orange","green","echidna","babirusa","frog")
+)
+```
+
+
+
+## `Pivot()`
+
+預覽示範資料
+
+```{r load-ocean, message=FALSE}
+personality <- read_csv("https://psyteachr.github.io/msc-data-skills/data/personality.csv")
+```
+
+`r head(personality) %>% knitr::kable()`
+
+### pivot_longer
+
+寬表單轉長表單，可將變項名稱分解到兩個欄位。
+
+`pivot_longerdata,  cols,  names_to = "name",  names_sep = NULL,  values_to = ...)`
+
+- `cols` refers to the columns you want to make long You can refer to them by their names, like `col1, col2, col3, col4` or `col1:col4` or by their numbers, like `8, 9, 10` or `8:10`.
+- `names_to` is what you want to call the new columns that the gathered column headers will go into; it’s “domain” and “qnumber” in this example.
+- `names_sep` is an optional argument if you have more than one value for names_to. It specifies the characters or position to split the values of the cols headers.
+- `values_to` is what you want to call the values in the columns `...`; they’re “score” in this example.
+
+```{r}
+personality_long <- pivot_longer(
+  data = personality, 
+  cols = Op1:Ex9,                    # columns to make long 
+  names_to = c("domain", "qnumber"), # new column names for headers
+  names_sep = 2,                     # how to split the headers
+  values_to = "score"                # new column name for values
+) %>%
+  glimpse()
+```
+
+### pivot_wider
+
+長表單轉寛表單，可組合兩個以上變項。
+
+`pivot_wider(data,  names_to = "name",  values_to = ...,  names_sep = NULL)`
+
+
+- `names_from` is the columns that contain your new column headers.
+- `values_from` is the column that contains the values for the new columns.
+- `names_sep` is the character string used to join names if names_from is more than one column.
+
+
+```{r}
+personality_wide <- pivot_wider(
+  data = personality_long,
+  names_from = c(domain, qnumber),
+  values_from = score,
+  names_sep = "_"
+) %>%
+  glimpse()
+```
+
+## 清理資料的dplyr函式
+
+### gather()
+
+寬表單轉長表單，只能將變項名稱集中到一個欄位。
+
+`gather(data, key = "key", value = "value", ..., na.rm = FALSE, convert = FALSE, factor_key = FALSE)`
+
+* `key` is what you want to call the new column that the gathered column headers will go into; it's "question" in this example. 
+* `value` is what you want to call the values in the gathered columns; they're "score" in this example.
+* `...` refers to the columns you want to gather. You can refer to them by their names, like `col1, col2, col3, col4` or `col1:col4` or by their numbers, like `8, 9, 10` or `8:10`.
+* `na.rm` determines whether rows with `NA` values should be removed
+* `convert` whether to automatically convert the results to another data type
+* `factor_key` whether to store the key values as a factor (with the same order as in the table) or character vector
+
+`personality` is in wide format, with a separate column for each question. Change it to long format, with a row for each user/question observation. The resulting dataframe should have the columns: `user_id`, `date`, `question`, and `score`.
+    
+```{r personality-gathered}
+personality_gathered <- gather(
+  data = personality, 
+  key = "question", # new column name for gathered headers
+  value = "score",  # new column name for gathered values
+  Op1:Ex9           # columns to gather
+) %>%
+  glimpse()
+```
+
+`r head(personality_gathered) %>% knitr::kable()`
+
+### separate()
+
+分裂一個變項與為兩個變項，通常搭配`gather()`使用。
+
+`separate(data, col, into, sep = "[^[:alnum:]]+", remove = TRUE, convert = FALSE, extra = "warn", fill = "warn")`
+
+* `col` is the column you want to separate
+* `into` is a vector of new column names
+* `sep` is the character(s) that separate your new columns. This defaults to anything that isn't alphanumeric, like .`,_-/:`
+* `remove` determines whether the separated column (`col`) will be removed from the new data table. The default is to remove it.
+* `convert` whether to automatically convert the results to another data type
+* `extra` controls what happens when there are too many pieces
+* `fill` controls what happens when there are not enough pieces
+
+Split the `question` column into two columns: `domain` and `qnumber`.
+
+There is no character to split on, here, but you can separate a column after a specific number of characters by setting `sep` to  an integer. For example, to split "abcde" after the third character, use `sep = 3`, which results in `c("abc", "de")`. You can also use negative number to split before the *n*th character from the right. For example, to split a column that has words of various lengths and 2-digit suffixes (like "lisa03"", "amanda38"), you can use `sep = -2`.
+    
+```{r personality-separate}
+personality_sep <- separate(
+  data = personality_gathered, 
+  col = question,                # column to separate
+  into = c("domain", "qnumber"), # new column names
+  sep = 2                        # where to separate
+) %>%
+  glimpse()
+```
+
+`r head(personality_sep) %>% knitr::kable()`
+
+<div class="warning">
+If you want to separate just at full stops, you need to use `sep = "\\."`, not `sep = "."`. The two slashes **escape** the full stop, making it interpreted as a literal full stop and not the regular expression for any character.
+</div>
+
+### unite()
+
+組合兩個變項到一個新變項，並移除原始變項。通常用來修改變項數值。
+
+`unite(data, col, ..., sep = "_", remove = TRUE)`
+
+* `col` is your new united column
+* `...` refers to the columns you want to unite
+* `sep` is the character(s) that will separate your united columns
+* `remove` determines whether the united columns (`...`) will be removed from the new data table. The default is to remove them.
+
+Put the domain and qnumber columns back together into a new column named `domain_n`. Make it in a format like "Op_Q1".
+    
+```{r personality-unite}
+personality_unite <- unite(
+  data = personality_sep, 
+  col = "domain_n", # new column name
+  domain, qnumber,  # columns to unite
+  sep = "_Q"        # separation characters
+) %>%
+  glimpse()
+```
+
+`r head(personality_unite) %>% knitr::kable()`
+
+
+### spread()
+
+寬表單轉長表單，只能轉換一個變項。通常與`unite()`一起使用。
+
+`spread(data, key, value, fill = NA, convert = FALSE, drop = TRUE, sep = NULL)`
+
+You can reverse the processes above, as well. For example, you can convert data from long format into wide format.
+
+* `key` is the column that contains your new column headers
+* `value` is the column that contains the values in the new spread columns
+    
+```{r ocean-spread}
+personality_spread <- spread(
+  data = personality_unite,
+  key = domain_n, # column that contains new headers
+  value = score   # column that contains new values
+) %>%
+  glimpse()
+```
+
+
+## 管道運算子 %>%
+
+以下計算變項A,B平均數與變異數的R程式碼，總共有多少行？
+
+Pipes are a way to order your code in a more readable format. 
+
+Let's say you have a small data table with 10 participant IDs, two columns with variable type A, and 2 columns with variable type B. You want to calculate the mean of the A variables and the mean of the B variables and return a table with 10 rows (1 for each participant) and 3 columns (`id`, `A_mean` and `B_mean`). 
+
+One way you could do this is by creating a new object at every step and using that object in the next step. This is pretty clear, but you've created 6 unnecessary data objects in your environment. This can get confusing in very long scripts. 
+
+```{r no-pipe-example}
+
+# make a data table with 10 subjects
+data_original <- tibble(
+  id = 1:10,
+  A1 = rnorm(10, 0),
+  A2 = rnorm(10, 1),
+  B1 = rnorm(10, 2),
+  B2 = rnorm(10, 3)
+)
+
+# gather columns A1 to B2 into "variable" and "value" columns
+data_gathered <- gather(data_original, variable, value, A1:B2)
+
+# separate the variable column at the _ into "var" and "var_n" columns
+data_separated <- separate(data_gathered, variable, c("var", "var_n"), sep = 1)
+
+# group the data by id and var
+data_grouped <- group_by(data_separated, id, var)
+
+# calculate the mean value for each id/var 
+data_summarised <- summarise(data_grouped, mean = mean(value))
+
+# spread the mean column into A and B columns
+data_spread <- spread(data_summarised, var, mean)
+
+# rename A and B to A_mean and B_mean
+data <- rename(data_spread, A_mean = A, B_mean = B)
+
+data
+```
+
+```{block, type="warning"}
+You *can* name each object `data` and keep replacing the old data object with the new one at each step. This will keep your environment clean, but I don't recommend it because it makes it too easy to accidentally run your code out of order when you are running line-by-line for development or debugging.
+```
+
+One way to avoid extra objects is to nest your functions, literally replacing each data object with the code that generated it in the previous step. This can be fine for very short chains.
+
+其實一個函式的輸出，可做為另一個函式的參數。
+
+```{r ok-chain}
+mean_petal_width <- round(mean(iris$Petal.Width), 2)
+```
+
+But it gets extremely confusing for long chains:
+
+運用這個特性，我們可以將以上範例的R程式碼改寫成以下示範：
+
+```{r no-pipe-example-very-bad}
+# do not ever do this!!
+data <- rename(
+  spread(
+    summarise(
+      group_by(
+        separate(
+          gather(
+            tibble(
+              id = 1:10,
+              A1 = rnorm(10, 0),
+              A2 = rnorm(10, 1),
+              B1 = rnorm(10, 2),
+              B2 = rnorm(10,3)), 
+            variable, value, A1:B2), 
+          variable, c("var", "var_n"), sep = 1), 
+        id, var), 
+      mean = mean(value)), 
+    var, mean), 
+  A_mean = A, B_mean = B)
+
+```
+
+The pipe lets you "pipe" the result of each function into the next function, allowing you to put your code in a logical order without creating too many extra objects.
+
+但是這種程式寫作模式違反輸入到輸出的關連性，也不容易除錯，管道運算子幫了一些忙。
+
+```{r pipe-example}
+# calculate mean of A and B variables for each participant
+data <- tibble(
+  id = 1:10,
+  A1 = rnorm(10, 0),
+  A2 = rnorm(10, 1),
+  B1 = rnorm(10, 2),
+  B2 = rnorm(10,3)
+) %>%
+  gather(variable, value, A1:B2) %>%
+  separate(variable, c("var", "var_n"), sep=1) %>%
+  group_by(id, var) %>%
+  summarise(mean = mean(value)) %>%
+  spread(var, mean) %>%
+  rename(A_mean = A, B_mean = B)
+  
+```
+
+You can read this code from top to bottom as follows:
+
+1. Make a tibble called `data` with
+    - id of 1 to 10,
+    - A1 of 10 random numbers from a normal distribution,
+    - A2 of 10 random numbers from a normal distribution,
+    - B1 of 10 random numbers from a normal distribution, 
+    - B2 of 10 random numbers from a normal distribution; and then
+2. Gather to create `variable` and `value` column from columns `A_1` to `B_2`; and then
+3. Separate the column `variable` into 2 new columns called `var`and `var_n`, separate at character 1; and then
+4. Group by columns `id` and `var`; and then
+5. Summarise and new column called `mean` as the mean of the `value` column for each group; and then
+6. Spread to make new columns with the key names in `var` and values in `mean`; and then
+7. Rename to make columns called `A_mean` (old `A`) and `B_mean` (old `B`)
+
+You can make intermediate objects whenever you need to break up your code because it's getting too complicated or you need to debug something.
+
+```{block type="info"}
+You can debug a pipe by highlighting from the beginning to just before the pipe you want to stop at. Try this by highlighting from `data <-` to the end of the `separate` function and typing cmd-return. What does `data` look like now?
+```
+
+
+Chain all the steps above using pipes.
+
+來看看如何用管道運算子清理資料
+
+```{r ocean-pipe}
+personality_sum <- read_csv("https://psyteachr.github.io/msc-data-skills/data/personality.csv") %>%
+  gather("question", "score", Op1:Ex9) %>%
+  separate(question, c("domain", "qnumber"), sep = 2) %>%
+  unite("domain_n", domain, qnumber, sep = "_Q") %>%
+  spread(domain_n, score)
+```
+
+## 清理函式的更多功能
+
+### 示範資料預覽
+
+
+Get data on infant mortality rates from the CSV file 
+[`infmort.csv`](data/infmort.csv) in the directory `data`.
+
+```{r load-infmort}
+infmort <- read_csv("../data/infmort.csv")
+head(infmort)
+```
+
+`infmort`資料集的待清理部分是什麼？
+
+
+{#data-matmort}
+Get data on maternal mortality from from the excel file 
+[`matmort.xls`](data/matmort.xls) in the directory `data`
+
+```{r load-matmort}
+matmort <- read_xls("../data/matmort.xls")
+glimpse(matmort)
+```
+
+`matmort`資料集的待清理部分是什麼？
+
+
+### 清理`matmort`
+
+
+`matmort` is in wide format, with a separate column for each year. Change it to long format, with a row for each County/Year observation.
+  
+This example is complicated because the column names to gather _are_ numbers. If the column names are non-standard (e.g., have spaces, start with numbers, or have special characters), you can enclose them in backticks (\`) like the example below.
+
+轉換方法1
+
+```{r matmort-long1}
+
+matmort_long <- matmort %>%
+  pivot_longer(cols = `1990`:`2015`,
+               names_to = "Year",
+               values_to = "stats")
+
+glimpse(matmort_long)
+
+```
+
+轉換方法2
+
+```{r matmort-long2}
+matmort_long <- matmort %>%
+  gather("Year", "stats", `1990`:`2015`)
+
+glimpse(matmort_long)
+```
+
+### 分開混在單一欄位內的並列數值
+
+The data in the `stats` column is in an unusual format with some sort of confidence interval in brackets and lots of extra spaces. We don't need any of the spaces, so first we'll remove them with `mutate`. 
+
+The `separate` function will separate your data on anything that is not a number or letter, so try it first without specifying the `sep` argument. The `into` argument is a list of the new column names.
+
+
+
+```{r matmort-split-separate}
+matmort_split <- matmort_long %>%
+  mutate(stats = gsub(" ", "", stats)) %>%
+  separate(stats, c("rate", "ci_low", "ci_hi"))
+
+glimpse(matmort_split)
+```
+
+**留意輸出的警告訊息！**
+
+```{block, type="info"}
+The `gsub(pattern, replacement, x)` function is a 
+flexible way to do search and replace. The example above replaces all occurances of the `pattern` " " (a space), with the `replacement` "" (nothing), in the string `x` (the `stats` column). Use `sub()` instead if you only want to replace the first occurance of a pattern. We only used a simple pattern here, but you can use more complicated [regex](https://stat.ethz.ch/R-manual/R-devel/library/base/html/regex.html) patterns to replace, for example, all even numbers (e.g., `gsub("[:02468:]", "*", "id = 123456")`) or all occurances of the word colour in US or UK spelling 
+(e.g., `gsub("colo(u)?r", "***", "replace color, colour, or colours, but not collors")`).
+```
+
+#### 使用參數 `extra` 處理分割數值
+
+
+```{block, type="warning"}
+The previous example should have given you an error warning about 
+"Too many values at 543 locations". This is because `separate` splits the column at the brackets and dashes, so the text `100[90-110]` would split into four values `c("100", "90", "110", "")`, but we only specified 3 new columns. The fourth value 
+is always empty (just the part after the last bracket), so we are happy to drop it, but `separate` generates a warning so you don't do that accidentally. You can turn off the warning by adding the `extra` argument and setting it to "drop". Look at the help for `??tidyr::separate` to see what the other options do.
+```
+
+
+```{r matmort-split-extra}
+
+matmort_split <- matmort_long %>%
+  mutate(stats = gsub(" ", "", stats)) %>%
+  separate(stats, c("rate", "ci_low", "ci_hi"), extra = "drop")
+
+glimpse(matmort_split)
+
+```
+
+### 清理`infmort`
+
+Now do the same with `infmort`. It's already in long format, so you don't need to use `gather`, but the third column has a crazy long name, so we can just refer to it by its column number (3).
+
+```{r infmort-split-sep}
+
+infmort_split <- infmort %>%
+  separate(3, c("rate", "ci_low", "ci_hi"), extra = "drop")
+
+glimpse(infmort_split)
+
+```
+
+**留意輸出的資料內容！**
+
+*Wait, that didn't work at all!* It split the column on spaces, brackets, _and_ full stops. We just want to split on the spaces, brackets and dashes. So we need to manually set `sep` to what the delimiters are. Also, once there are more than a few arguments specified for a function, it's easier to read them if you put one argument on each line.
+
+{#regex}
+```{block, type="warning"}
+You can use [regular expressions](https://stat.ethz.ch/R-manual/R-devel/library/base/html/regex.html) 
+to separate complex columns. Here, we want to separate on dashes and brackets. You can separate on a list of delimiters by putting them in parentheses, separated by "|". It's a little more complicated because brackets have a special meaning in regex, so you need to "escape" the left one with two backslashes "\\\\".
+```
+
+
+#### 使用參數`sep`設定分隔字符
+
+再做一次清理`infmort`
+
+```{r infmort-split}
+
+infmort_split <- infmort %>%
+  separate(
+    col = 3, 
+    into = c("rate", "ci_low", "ci_hi"), 
+    extra = "drop", 
+    sep = "(\\[|-|])"  #正則表示式 regular expression
+  )
+
+glimpse(infmort_split)
+
+```
+
+**留意輸出資料內容與型態**
+
+#### 參數 `convert` 重設變項資料型態
+
+That's better. Notice the _<chr>_ next to `Year`, `rate`, `ci_low` and `ci_hi`. That means these columns hold characters (like words), not numbers or integers. This can cause problems when you try to do thigs like average the numbers (you can't average words), so we can fix it by adding the argument `convert` and setting it to `TRUE`.
+
+再做一次清理`infmort`
+
+```{r infmort-split-convert}
+
+infmort_split <- infmort %>%
+  separate(col = 3, 
+           into = c("rate", "ci_low", "ci_hi"), 
+           extra = "drop", 
+           sep = "(\\[|-|])", 
+           convert = TRUE)
+
+glimpse(infmort_split)
+  
+```
+
+
+**留意輸出資料內容與型態**
+
+Do the same for `matmort`.
+
+再做一次清理`matmort`
+
+```{r matmort-split-convert}
+
+matmort_split <- matmort_long %>%
+  mutate(stats = gsub(" ", "", stats)) %>%
+  separate(col = stats, 
+           into = c("rate", "ci_low", "ci_hi"), 
+           extra = "drop", 
+           convert = TRUE)
+
+glimpse(matmort_split)
+
+```
+
+
+**留意輸出資料內容與型態**
+
+### 管道運算子的更多妙用
+
+#### 資料清理一行到位
+
+We can chain all the steps above together, since we don't need those intermediate dataframes.
+
+```{r all-in-1}
+
+matmort2<- dataskills::matmort %>%
+  gather("Year", "stats", `1990`:`2015`) %>%
+  mutate(stats = gsub(" ", "", stats)) %>%
+  separate(
+    col = stats, 
+    into = c("rate", "ci_low", "ci_hi"), 
+    extra = "drop", 
+    convert = TRUE
+  ) %>%
+  glimpse()
+
+```
+
+#### 比較spread()與pivot_wider()
+
+
+Spread out the infant mortality rate by year.
+
+```{r matmort-wide-spread}
+
+matmort_wide <- matmort2 %>%
+  spread(key = Year, value = rate) %>%
+  print()
+```
+
+**留意新表單有太多遺漏值(NA)**
+
+```{block, type="warning"}
+Nope, that didn't work at all, but it's a really common mistake when spreading data. This is because `spread` matches on all the remaining columns, so Afghanistan with `ci_low` of 52.7 is treated as a different observation than Afghanistan with `ci_low` of 55.7. We can fix this by merging the `rate`, `ci_low` and `ci_hi` columns back together.
+```
+
+This is where `pivot_wider()` can be very useful. You can set `values_from` to multiple column names and their names will be added to the `names_from` values.
+
+```{r matmort-pivot-wider}
+matmort_wide <- matmort2 %>%
+  pivot_wider(
+    names_from = Year,
+    values_from = c(rate, ci_low, ci_hi)
+  )
+              
+glimpse(matmort_wide)
+```
+
+**慎選使用寬表格的時機與方法！**
+
+### 擷取問卷平台的原始資料
+
+Students in the Institute of Neuroscience and Psychology at the University of Glasgow can use the online experiment builder platform, [Experimentum](https://debruine.github.io/experimentum/index.html). The platform is also [open source on github](https://github.com/debruine/experimentum) for anyone who can install it on a web server. It allows you to group questionnaires and experiments into projects with randomisation and counterbalancing. Data for questionnaires and experiments are downloadable in long format, but researchers often need to put them in wide format for analysis.
+
+Look at the help menu for built-in dataset dataskills::experimentum_quests to learn what each column is. Subjects are asked questions about dogs to test the different questionnaire response types.
+
+
+```{r quests_q_check}
+names(dataskills::experimentum_quests)
+
+dataskills::experimentum_quests$q_name %>%
+  unique()
+
+dataskills::experimentum_quests$dv %>% head(8)
+```
+
+
+- current: Do you own a dog? (yes/no)
+- past: Have you ever owned a dog? (yes/no)
+- name: What is the best name for a dog? (free short text)- - good: How good are dogs? (1=pretty good:7=very good)
+- country: What country do borzois come from?
+- good_borzoi: How good are borzois? (0=pretty good:100=very good)
+- text: Write some text about dogs. (free long text)
+- time: What time is it? (time)
+
+
+
+To get the dataset into wide format, where each question is in a separate column, use the following code:
+
+```{r quests_r}
+q <- dataskills::experimentum_quests %>%
+  pivot_wider(id_cols = session_id:user_age,
+              names_from = q_name,
+              values_from = dv) %>%
+  type.convert(as.is = TRUE) %>%
+  print()
+```
+
+
+
+```{block, type="warning"}
+The responses in the dv column have multiple types (e.g., `r glossary(“integer”)`, `r glossary(“double”)`, and `r glossary(“character”)`), but they are all represented as character strings when they’re in the same column. After you spread the data to wide format, each column should be given the ocrrect data type. The function `type.convert()` makes a best guess at what type each new column should be and converts it. The argument `as.is = TRUE` converts columns where none of the numbers have decimal places to integers. 
+```
+
+

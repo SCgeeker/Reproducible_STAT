@@ -340,7 +340,19 @@ glimpse(ccodes)
   
 This example is complicated because the column names to gather _are_ numbers. If the column names are non-standard (e.g., have spaces, start with numbers, or have special characters), you can enclose them in backticks (\`) like the example below.
 
-```{r matmort-long}
+```{r matmort-long1}
+
+matmort_long <- matmort %>%
+  pivot_longer(cols = `1990`:`2015`,
+               names_to = "Year",
+               values_to = "stats") %>%
+
+glimpse(matmort_long)
+
+```
+
+
+```{r matmort-long2}
 
 matmort_long <- matmort %>%
   gather("Year", "stats", `1990`:`2015`)
