@@ -1,0 +1,536 @@
+---
+title: "函式與迭代"
+author: "陳紹慶"
+date: "2021/5/2"
+output: 
+  html_document:
+    css: custom.css
+    toc: true
+---
+
+運用程式語言駕馭資料分析的關鍵，是你能自建函式，實現你想完成的所有計畫。
+
+
+# 學習目標
+
+- 深入認知R的基本函式的**迭代函式**
+- 自建函式的必知技巧
+- 測試自建函式與除錯
+
+- 推薦秘訣表：[R設式設計技巧總整理](http://datasciencefree.com/advancedR.pdf),[purrr](https://evoldyn.gitlab.io/evomics-2018/ref-sheets/R_purrr.pdf)
+
+```{r setup}
+# libraries needed for these examples
+library(tidyverse)  ## contains purrr, tidyr, dplyr
+library(broom) ## converts test output to tidy tables
+
+set.seed(8675309) # makes sure random numbers are reproducible
+```
+
+## 迭代函式
+
+**迭代**: 一個函式能做為另一個函式的參數，以此關係持續組合程式碼。
+
+
+### `rep()`
+
+R基本函式之一；觀察以下五個block的輸出差異。
+
+The function `rep()` lets you repeat the first argument a number of times.
+
+Use `rep()` to create a vector of alternating `"A"` and `"B"` values of length 24.
+
+```{r rep1}
+rep(c("A", "B"), 12)
+```
+
+If you don't specify what the second argument is, it defaults to `times`, repeating the vector in the first argument that many times. Make the same vector as above, setting the second argument explicitly.
+
+```{r rep1-times}
+rep(c("A", "B"), times = 12)
+```
+
+If the second argument is a vector that is the same length as the first argument, each element in the first vector is repeated than many times. Use `rep()` to create a vector of 11 `"A"` values followed by 3 `"B"` values.
+
+```{r rep-vector}
+rep(c("A", "B"), c(11, 3))
+```
+
+You can repeat each element of the vector a sepcified number of times using the `each` argument, Use `rep()` to create a vector of 12 `"A"` values followed by 12 `"B"` values.
+
+```{r rep-each}
+rep(c("A", "B"), each = 12)
+```
+
+What do you think will happen if you set both `times` to 3 and `each` to 2?
+
+```{r rep-times-each}
+rep(c("A", "B"), times = 3, each = 2)
+```
+
+
+### `seq()`
+
+R基本函式之一；觀察以下三個block的輸出差異。
+
+
+The function `seq()` is useful for generating a sequence of numbers with some pattern.
+
+Use `seq()` to create a vector of the integers 0 to 10.
+
+```{r seq1-10}
+seq(0, 10)
+```
+
+You can set the `by` argument to count by numbers other than 1 (the default). Use `seq()` to create a vector of the numbers 0 to 100 by 10s.
+
+```{r seq-by}
+seq(0, 100, by = 10)
+```
+
+The argument `length.out` is useful if you know how many steps you want to divide something into. Use `seq()` to create a vector that starts with 0, ends with 100, and has 12 equally spaced steps (hint: how many numbers would be in a vector with 2 *steps*?).
+
+```{r seq-length-out}
+seq(0, 100, length.out = 13)
+```
+
+
+### replicate()
+
+設定函式以一種參數執行的重覆次數；觀察以下兩個block的輸出差異。
+
+You can use the replicate() function to run a function n times.
+
+For example, you can get 3 sets of 5 numbers from a random normal distribution by setting n to 3 and expr to rnorm(5).
+
+```{r replicate-out}
+replicate(n = 3, expr = rnorm(5))
+```
+
+By default, replicate() simplifies your result into a matrix that is easy to convert into a table if your function returns vectors that are the same length. If you’d rather have a list of vectors, set simplify = FALSE
+
+```{r replicate-simplify}
+replicate(n = 3, expr = rnorm(5), simplify = FALSE)
+```
+
+
+### map() and lapply() functions
+
+設定函式以n種參數執行的重覆次數
+
+purrr::map() and lapply() return a list of the same length as a vector or list, each element of which is the result of applying a function to the corresponding element. They function much the same, but purrr functions have some optimisations for working with the tidyverse. We’ll be working mostly with purrr functions in this course, but apply functions are very common in code that you might see in examples on the web.
+
+Imagine you want to calculate the power for a two-sample t-test with a mean difference of 0.2 and SD of 1, for all the sample sizes 100 to 1000 (by 100s). You could run the power.t.test() function 20 times and extract the values for “power” from the resulting list and put it in a table.
+
+參數表式執行起點(n=100)及終點(n=1000)，有多種樣本數要評估
+
+```{r no-functions}
+p100 <- power.t.test(n = 100, delta = 0.2, sd = 1, type="two.sample")
+# 18 more lines
+p1000 <- power.t.test(n = 1000, delta = 0.2, sd = 1, type="two.sample")
+
+tibble(
+  n = c(100, "...", 1000),
+  power = c(p100$power, "...", p1000$power)
+)
+```
+
+However, the apply() and map() functions allow you to perform a function on each item in a vector or list. First make an object n that is the vector of the sample sizes you want to test, then use lapply() or map() to run the function power.t.test() on each item. You can set other arguments to power.t.test() after the function argument.
+
+比較`lapply`與`purr::map`的執行結果
+
+```{r apply-demo}
+n <- seq(100, 1000, 100)
+pcalc_l <- lapply(n, power.t.test, 
+                delta = 0.2, sd = 1, type="two.sample")
+# or
+pcalc_m <- purrr::map(n, power.t.test, 
+                delta = 0.2, sd = 1, type="two.sample")
+```
+
+
+These functions return a list where each item is the result of power.t.test(), which returns a list of results that includes the named item “power”. This is a special list that has a summary format if you just print it directly:
+
+```{r}
+pcalc_l[[1]]
+```
+
+But you can see the individual items using the str() function.
+
+```{r}
+pcalc_l[[1]] %>% str()
+```
+
+sapply() is a version of lapply() that returns a vector or array instead of a list, where appropriate. The corresponding purrr functions are map_dbl(), map_chr(), map_int() and map_lgl(), which return vectors with the corresponding data type.
+
+You can extract a value from a list with the function [[. You usually see this written as pcalc[[1]], but if you put it inside backticks, you can use it in apply and map functions.
+
+使用`sapply`輸出考驗力估計值
+
+```{r}
+sapply(pcalc_l, `[[`, "power")
+```
+
+
+We use map_dbl() here because the value for “power” is a double.
+
+
+使用`purrr::map_dbl`輸出考驗力估計值
+
+
+```{r}
+purrr::map_dbl(pcalc_m, `[[`, "power")
+```
+
+We can use the map() functions inside a mutate() function to run the power.t.test() function on the value of n from each row of a table, then extract the value for “power”, and delete the column with the power calculations.
+
+使用管道運算子一氣呵成
+
+```{r mypower}
+mypower <- tibble(
+  n = seq(100, 1000, 100)) %>%
+  mutate(pcalc = purrr::map(n, power.t.test, 
+                            delta = 0.2, 
+                            sd = 1, 
+                            type="two.sample"),
+         power = purrr::map_dbl(pcalc, `[[`, "power")) %>%
+  select(-pcalc)
+```
+
+
+
+## 自訂函式
+
+> 演練時開啟"Enviroment"視窗，觀察載入的函式內存。
+
+<!--
+Now we are going to wrap up the code we created above into two custom functions: `sim_data()`, which will generate a `tibble()` with randomly generated two group data; and `run_anova()` which will run an anova on a data table.  But let's first get some practice creating functions.
+-->
+
+In addition to the built-in functions and functions you can access from packages, you can also write your own functions (and eventually even packages!).
+
+### 函式的基本結構
+
+The general structure of a function is as follows:
+
+```{r}
+function_name <- function(my_args) {
+  # process the arguments
+  # return some value
+}
+```
+
+Here is a very simple function. Can you guess what it does?
+
+改變`add1()`之內的數字，觀察測試結果
+
+```{r}
+add1 <- function(my_number) {
+  my_number + 1
+}
+
+add1(10)
+```
+
+Let's make a function that reports p-values in APA format (with "p = rounded value" when p >= .001 and "p < .001" when p < .001).
+
+First, we have to name the function. You can name it anything, but try not to duplicate existing functions or you will overwrite them. For example, if you call your function `rep`, then you will need to use `base::rep()` to access the normal `rep` function. Let's call our p-value function `report_p` and set up the framework of the function.
+
+以下示範如何完成自訂函式`report_p`。在R程式腳本及Rmarkdown文件檔，函式必須置於最前端，或置於獨立的腳本之中。
+
+```{r}
+report_p <- function() {
+}
+```
+
+### 函式的參數(Arguments)
+
+We need to add one *argument*, the p-value you want to report. The names you choose for the arguments are private to that argument, so it is not a problem if they conflict with other variables in your script. You put the arguments in the parentheses after `function` in the order you want them to default (just like the built-in functions you've used before). 
+
+逐步執行以下的block，觀察"Environment" -> "Fucntions"的內存變化。
+
+```{r}
+report_p <- function(p) {
+}
+```
+
+### 參數的預設值
+
+You can add a default value to any argument. If that argument is skipped, then the function uses the default argument. It probably doesn't make sense to run this function without specifying the p-value, but we can add a second argument called `digits` that defaults to 3, so we can round p-values to 3 digits.
+
+```{r}
+report_p <- function(p, digits = 3) {
+}
+```
+
+Now we need to write some code inside the function to process the input arguments and turn them into a **return**ed output. Put the output as the last item in function.
+
+```{r}
+report_p <- function(p, digits = 3) {
+  if (p < .001) {
+    reported = "p < .001"
+  } else {
+    roundp <- round(p, digits)
+    reported = paste("p =", roundp)
+  }
+  
+  reported
+}
+```
+
+You might also see the returned output inside of the `return()` function. This does the same thing.
+
+要確保自訂函式輸出結果存入物件，建議使用`return(_foo_)`結束。
+
+```{r}
+report_p <- function(p, digits = 3) {
+  if (p < .001) {
+    reported = "p < .001"
+  } else {
+    roundp <- round(p, digits)
+    reported = paste("p =", roundp)
+  }
+  
+  return(reported)
+}
+```
+
+When you run the code defining your function, it doesn't output anything, but makes a new object in the Environment tab under **`Functions`**. Now you can run the function.
+
+```{r}
+report_p(0.04869)
+report_p(0.0000023)
+```
+
+### 變數範圍
+
+What happens in a function stays in a function. You can change the value of a variable passed to a function, but that won't change the value of the variable outside of the function, even if that variable has the same name as the one in the function.
+
+在"Console"逐行輸入以下程式碼，比較"Envoronment"的變化。
+
+```{r}
+reported <- "not changed"
+
+# inside this function, reported == "p = 0.002"
+report_p(0.0023) 
+
+reported # still "not changed"
+```
+
+
+### 警告與錯誤訊息(Warnings and errors)
+
+```{block, type="try"}
+What happens when you omit the argument for `p`? Or if you set `p` to 1.5 or "a"?</p>
+```
+
+You might want to add a more specific warning and stop running the function code if someone enters a value that isn't a number. You can do this with the `stop()` function.
+
+If someone enters a number that isn't possible for a p-value (0-1), you might want to warn them that this is probably not what they intended, but still continue with the function. You can do this with `warning()`.
+
+能回報錯誤與警告訊息的自訂函式。
+
+```{r}
+report_p <- function(p, digits = 3) {
+  if (!is.numeric(p)) stop("p must be a number")
+  if (p <= 0) warning("p-values are normally greater than 0")
+  if (p >= 1) warning("p-values are normally less than 1")
+  
+  if (p < .001) {
+    reported = "p < .001"
+  } else {
+    roundp <- round(p, digits)
+    reported = paste("p =", roundp)
+  }
+  
+  reported
+}
+```
+
+以下block各行不輸出到網頁，必須自行在"Console"執行。
+
+```{r error-warn, eval=FALSE, error=TRUE, warning=TRUE, include=FALSE}
+report_p()
+report_p("a")
+report_p(-2)
+report_p(2)
+```
+
+## 運用迭代自建函式
+
+以下依步驟示範如何自訂統計分析模擬函式`t_sim()`
+
+First, let's build up the code that we want to iterate.
+
+### 第1步 `rnorm()`
+
+從製造**隨機變數**開始，每個隨機變數數值都是來自設定好的常態分佈之中的亂數。
+
+Create a vector of 20 random numbers drawn from a normal distribution with a mean of 5 and standard deviation of 1 using the `rnorm()` function and store them in the variable `A`.
+
+```{r}
+A <- rnorm(20, mean = 5, sd = 1)
+```
+
+### 第2步 `tibble::tibble()`
+
+A `tibble` is a type of table or `data.frame`. The function `tibble::tibble()` creates a tibble with a column for each argument. Each argument takes the form `column_name = data_vector`.
+
+Create a table called `dat` including two vectors: `A` that is a vector of 20 random normally distributed numbers with a mean of 5 and SD of 1, and `B` that is a vector of 20 random normally distributed numbers with a mean of 5.5 and SD of 1.
+
+```{r}
+dat <- tibble(
+  A = rnorm(20, 5, 1),
+  B = rnorm(20, 5.5, 1)
+)
+```
+
+### 第3步 `t.test`
+
+使用自訂隨機變數的亂數數值，進行t檢定。
+
+You can run a Welch two-sample t-test by including the two samples you made as the first two arguments to the function `t.test`. You can reference one column of a table by its names using the format `table_name$column_name`
+
+t檢定函式的草莾新手用法
+
+```{r}
+t.test(dat$A, dat$B)
+```
+
+You can also convert the table to long format using the `gather` function and specify the t-test using the format `dv_column~grouping_column`.
+
+t檢定函式的長表單高手用法
+
+```{r}
+longdat <- gather(dat, group, score, A:B)
+
+t.test(score~group, data = longdat) 
+```
+
+### 第4步 `broom::tidy()`
+
+You can use the function `broom::tidy()` to extract the data from a statistical test in a table format. The example below pipes everything together.
+
+```{r}
+tibble(
+  A = rnorm(20, 5, 1),
+  B = rnorm(20, 5.5, 1)
+) %>%
+  gather(group, score, A:B) %>%
+  t.test(score~group, data = .) %>%
+  broom::tidy()
+```
+
+Finally, we can extract a single value from this results table using `pull()`.
+
+```{r}
+tibble(
+  A = rnorm(20, 5, 1),
+  B = rnorm(20, 5.5, 1)
+) %>%
+  gather(group, score, A:B) %>%
+  t.test(score~group, data = .) %>%
+  broom::tidy() %>%
+  pull(p.value)
+```
+
+### 第5步 自建函式`t_sim`
+
+First, name your function `t_sim` and wrap the code above in a function with no arguments. 
+
+```{r}
+t_sim <- function() {
+  tibble(
+    A = rnorm(20, 5, 1),
+    B = rnorm(20, 5.5, 1)
+  ) %>%
+    gather(group, score, A:B) %>%
+    t.test(score~group, data = .) %>%
+    broom::tidy() %>%
+    pull(p.value) 
+}
+```
+
+Run it a few times to see what happens.
+
+```{r}
+t_sim()
+```
+
+### 第6步 迭代`t_sim()`
+
+You can use the `replicate` function to run a function any number of times.
+
+```{r}
+replicate(3, rnorm(5))
+```
+
+Let's run the `t_sim` function 1000 times, assign the resulting p-values to a vector called `reps`, and check what proportion of p-values are lower than alpha (e.g., .05). This number is the power for this analysis.
+
+```{r}
+reps <- replicate(1000, t_sim())
+alpha <- .05
+power <- mean(reps < alpha)
+power
+```
+
+### 第7步 設定隨機種子
+
+You can use the `set.seed` function before you run a function that uses random numbers to make sure that you get the same random data back each time. You can use any integer you like as the seed.
+
+```{r set-seed-90210}
+set.seed(90201)
+```
+
+```{block type="warning"}
+Make sure you don't ever use `set.seed()` **inside** of a simulation function, or you will just simulate the exact same data over and over again.
+```
+
+```{r img-seed-alignment, echo=FALSE, fig.cap="&commat;KellyBodwin"}
+knitr::include_graphics("../images/memes/seed_alignment.png")
+```
+
+### 第8步 加入自訂參數
+
+You can just edit your function each time you want to cacluate power for a different sample n, but it is more efficent to build this into your fuction as an arguments. Redefine `t_sim`, setting arguments for the mean and SD of group A, the mean and SD of group B, and the number of subjects per group. Give them all default values.
+
+
+```{r}
+t_sim <- function(n = 10, m1=0, sd1=1, m2=0, sd2=1) {
+  tibble(
+    A = rnorm(n, m1, sd1),
+    B = rnorm(n, m2, sd2)
+  ) %>%
+    gather(group, score, A:B) %>%
+    t.test(score~group, data = .) %>%
+    broom::tidy() %>%
+    pull(p.value) 
+}
+```
+
+Test your function with some different values to see if the results make sense.
+
+```{r}
+t_sim(100)
+t_sim(100, 0, 1, 0.5, 1)
+```
+
+Use `replicate` to calculate power for 100 subjects/group with an effect size of 0.2 (e.g., A: m = 0, SD = 1; B: m = 0.2, SD = 1). Use 1000 replications.
+
+```{r}
+reps <- replicate(1000, t_sim(100, 0, 1, 0.2, 1))
+power <- mean(reps < .05)
+power
+```
+
+Compare this to power calculated from the `power.t.test` function.
+
+```{r}      
+power.t.test(n = 100, delta = 0.2, sd = 1, type="two.sample")
+```
+
+Calculate power via simulation and `power.t.test` for the following tests:
+
+* 20 subjects/group, A: m = 0, SD = 1; B: m = 0.2, SD = 1
+* 40 subjects/group, A: m = 0, SD = 1; B: m = 0.2, SD = 1
+* 20 subjects/group, A: m = 10, SD = 1; B: m = 12, SD = 1.5
