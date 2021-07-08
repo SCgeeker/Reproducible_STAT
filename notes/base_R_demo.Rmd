@@ -22,12 +22,14 @@ if(!require(dplyr)){  ## 如果套件未安裝，先執行安裝再載入
 
 ```{r import_data}
 data(iris)
+head(iris)
 ```
 
+iris 資料有五個變項。
 
 ## 查詢使用說明
 
-```{r query_package, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+```
 ?mean  ## 取得函式的說明文件
 help.search('weightedmean')  ## 以關鍵詞查詢說明文件
 help(package ='dplyr')  ## 關鍵詞查詢說明文件
