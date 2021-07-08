@@ -1,0 +1,111 @@
+---
+title: "基礎 R 語法寫作示範"
+author: "陳紹慶"
+date: "2021/7/6"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+## 建議在此載入會使用的已安裝套件
+if(!require(dplyr)){  ## 如果套件未安裝，先執行安裝再載入
+  install.packages("dplyr")
+  library(dplyr)
+} else {  ## 如果套件已經安裝，直接執行載入
+  library(dplyr)
+}
+```
+
+## 使用套件
+
+載入內建資料
+
+```{r import_data}
+data(iris)
+```
+
+
+## 查詢使用說明
+
+```{r query_package, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+?mean  ## 取得函式的說明文件
+help.search('weightedmean')  ## 以關鍵詞查詢說明文件
+help(package ='dplyr')  ## 關鍵詞查詢說明文件
+```
+
+```{r query_object, message=FALSE, warning=FALSE}
+str(iris)
+class(iris)
+```
+
+## 工作目錄
+
+
+## 環境檢視函式
+
+### 指派變數數值
+
+
+
+## 向量
+
+### 向量運算函式
+
+### 向量索引
+
+### 向量數值型態
+
+as.logical
+
+## 迴圈與迭代
+
+
+### For
+
+
+### While
+
+
+### if
+
+
+### function
+
+
+## 存取資料
+
+### 讀寫資料
+
+
+### 比對運算子
+
+
+### 矩陣
+
+
+### 字串
+
+
+### 因子
+
+
+
+### 資料框架
+
+
+
+
+### 列表
+
+
+## 常用內建函式
+
+### 數學運算函式
+
+
+### 統計函式
+
+
+### 機率分佈函式
+
+### 繪圖函式
