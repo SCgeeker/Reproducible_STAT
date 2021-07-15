@@ -5,107 +5,451 @@ date: "2021/7/6"
 output: html_document
 ---
 
+
+> 講義範例來自[R基本實作秘訣速查表](../cheatsheets/base-r-TC.pdf)，搭配參考[Rstudio視覺介面](../cheatsheets/rstudio-ide-TC.pdf)以及[Rmarkdown秘訣速查表](../cheatsheets/rmarkdown-2.0-TC.pdf)。
+
+
+## 預先載入套件
+
+一份Rmarkdown文件經常使用非內建套件(package)的函式(function)與資料，為了能在文件內正常使用這些套件的函式，建議方式是在R markdown的第一個chunk載入。這段文字之後的`setup` chunk，渲染後(Knit)不會在輸出文件顯示chunk內的程式碼，你可以從[源始Rmarkdown檔](base_R_demo.Rmd)檢視安裝及載入套件的程式碼。
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 ## 建議在此載入會使用的已安裝套件
+knitr::opts_chunk$set(echo = TRUE) ## 文件內所有chunk的預設模式:顯示程式碼與執行結果
 if(!require(dplyr)){  ## 如果套件未安裝，先執行安裝再載入
-  install.packages("dplyr")
-  library(dplyr)
+  install.packages("dplyr")  ## 執行前安裝套件
+  library(dplyr)             ## 載入套件
 } else {  ## 如果套件已經安裝，直接執行載入
-  library(dplyr)
+  library(dplyr)             ## 載入套件
 }
 ```
 
-## 使用套件
 
-載入內建資料
+## 使用內建套件
+
+載入內建資料："iris"是經典生物統計資料集，常用於各式統計方法及程式測試。資料集介紹請見維基百科條目：[安德森鳶尾花卉數據集](https://zh.wikipedia.org/wiki/%E5%AE%89%E5%BE%B7%E6%A3%AE%E9%B8%A2%E5%B0%BE%E8%8A%B1%E5%8D%89%E6%95%B0%E6%8D%AE%E9%9B%86)。
 
 ```{r import_data}
 data(iris)
 ```
 
 
-## 查詢使用說明
+### 查詢使用說明
 
-```{r query_package, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+在console視窗輸入以下任何查詢指令，可開啟函式或套件的說明文件。
+
+```
 ?mean  ## 取得函式的說明文件
-help.search('weightedmean')  ## 以關鍵詞查詢說明文件
+help.search('weightedmean')  ## 以關鍵詞查詢有weightedmean函式的套件說明文件
 help(package ='dplyr')  ## 關鍵詞查詢說明文件
 ```
 
+
+### 查詢資料物件性質
+
+資料與函式在R環境通稱"物件"(Objects)，物件有兩種性質：形態(class)與資料結構(structure)。R環境設資料物件形態有數值(value)、向量(vector)、矩陣(matrix)、資料框架(data frame)、以及列表(List)。每種型態都有指定的資料結構，依照資料結構建立的資料物件，才能輸入函式，執行計算、資料整頓等工作。
+
 ```{r query_object, message=FALSE, warning=FALSE}
-str(iris)
-class(iris)
+class(iris) ## 顯示物件型態
+str(iris)   ## 顯示物作型態與資料結果
 ```
 
 ## 工作目錄
 
+- 工作目錄是R環境輸入及輸出檔案的資料夾路徑。有三種方法可確認現在的工作目錄。
 
-## 環境檢視函式
+1. 在console視窗執行`getwd()`。
+2. 在Rstudio切換Files視窗，點擊右上角Rstudio logo。
 
-### 指派變數數值
+![](../images/baseR_clip001.png)
+
+3. 在Rmarkdown文件內編輯的程式碼，工作目錄是文件存檔的資料夾路徑。
+
+- 若非必要，不建議更改工作目錄。若要更改可使用`setwd()`設定其他資料夾路徑。
+
+
+## 存取資料
+
+資料檔可存放於工作目錄之外的資料夾路徑，未處理的資料建議以csv格式存檔。
+
+### 讀取資料檔
+
+如果要使用之前儲存的映像檔(RData)，建議在文件第一個chunk `setup`執行匯入`load()`。  
+
+讀取前確認資料檔第一列(row)為欄位標題，才能獲得如範例的執行效果。
+以五大人格測驗資料為例：  
+
+```{r read_file, message=FALSE, warning=FALSE}
+# 讀取格式化分欄的純文字檔
+big5_01 <- read.table(file = "../data/5factor.txt", header = TRUE)
+head(big5_01)
+
+# 讀取逗號分欄的純文字檔
+big5_02 <- read.csv(file = "../data/5factor.csv")
+head(big5_02)
+```
+
+
+### 寫入資料檔
+
+存放資料檔格式以有分欄的純文字檔優先考慮，有其他格式或需儲存檔案太多，再考慮以映像檔(RData)儲存。
+
+```{r write_file, message=FALSE, warning=FALSE}
+## 建議增加參數row.names = FALSE
+## 寫入格式化分欄的純文字檔
+write.table(head(big5_01), file = "big5_head.txt",row.names = FALSE)
+## 寫入逗號分欄的純文字檔
+write.csv(head(big5_02), file = "big5_head.csv",row.names = FALSE)
+```
+
+
+## 檢視及建立物件
+
+- 執行大量程式碼將在R環境記憶體留存物件，改寫程式碼過程經常要檢視已存物件。檢視物件有兩種方法。
+
+1. 在console視窗執行`ls()`，列印已存物件名稱。
+2. 在Rstudio切換Environment視窗，查看已存物件清單。
+
+- 移除已存物件的方法：
+
+1. 移除指定物件：在console視窗，或程式碼腳本，執行`rm(x)`(x代表任何已存物件)。
+2. 移除全部物件：在console視窗，或程式碼腳本，執行`rm(list = ls())`。
+3. 在Rstudio主選單選擇"Session -> Restart R and Clear Output"，清除所有已存物件及已載入套件。
+
+![](../images/baseR_clip002.png)
+
+- 建立物件：使用指派運算子`<-`指派物件內容。R自動判斷運算子右方的資料結構，賦予物件型態。
+
+
+```{r create_objects, message=FALSE, warning=FALSE}
+## 指派數值
+a <- "apple"
+## 建立函式
+square <- function(x){
+  squared = x*x
+  return(squared)
+}
+## 檢視函式執行效果
+square(7)
+```
 
 
 
 ## 向量
 
+定義:一維資料結構~只用一套數值/向量索引資料內數值的結構。
+
+建立向量的各種方法：
+
+```{r create_vector, message=TRUE, warning=FALSE}
+x1 <- c(2,4,6)              #直接列出數值
+x2 <- 2:6                   #製造連續數值
+x3 <- seq(2, 3, by = 0.5)   #製造連續數值
+x4 <- rep(1:2, times=3)     #製造重覆數值
+names(x2) <- c("apple","banana","orange","lemon","papaja") #為數值命名
+```
+
 ### 向量運算函式
 
-### 向量索引
+資料表內一個欄位就是一個向量，內建運算函式能檢視向量內數值狀態：
 
-### 向量數值型態
+```{r check_vector, message=FALSE, warning=FALSE}
+sort(x4)   # 回傳排序的數值 
+rev(x4)    # 顛倒數值順序 
+table(x4)  # 表列數值次數
+unique(x4) # 查看數值種類
+```
 
-as.logical
+
+### 索引向量內數值
+
+資料處理與運算經常要由向量內取出部分數值，善用索引技巧能事半功倍。
+
+- 位置索引
+
+```{r position_index, message=FALSE, warning=FALSE}
+x2[4]      # 第四位數值
+x2[-4]     # 第四位之外的數值
+x2[2:4]    # 第二到第四位數值
+x2[-(2:4)]  # 第二到第四位之外的數值
+x2[c(1,5)]  # 第一位和第五位數值
+```
+
+
+- 數值索引
+
+```{r value_index, message=FALSE, warning=FALSE}
+x3[x3==3]            # 等於3的數值
+x3[which(x3==3)]     # 等於3的數值
+x3[x3<3]             # 小於3的數值
+x3[x3 %in% c(1,2,5)] # 符合集合{1, 2, 5}的數值
+```
+
+
+- 命名索引
+
+```{r name_index, message=FALSE, warning=FALSE}
+x2['apple']          # 命名是'apple'的數值
+```
+
+
+### 向量的物件型態
+
+向量的型態可以是邏輯值(logical), 整數或浮點數(numeric), 字符或字串(character), 以及因子(factor)。型態之間能用`as.`函式系列互相轉換，初次建立物件的R判斷順序是"logical -> numeric -> character -> factor"。
+
+||||
+|---|---|---|
+|`as.logical()`| `r as.logical(c(1,0,1))` |
+|`as.numeric()`| `r as.numeric(c(1,0,1))` |
+|`as.character()`| `r as.character(c(1,0,1))` | 測試console內執行 |
+|`as.factor()`| `r as.factor(c(1,0,1))` | 測試console內執行 |
 
 ## 迴圈與迭代
 
+善用迴圈與迭代，能簡化需要多次執行的程式碼。
 
-### For
+### for
+
+```{r for_example, message=FALSE, warning=FALSE}
+x <- 1:4
+
+for (i in x) {
+  j <- i + 10
+  print(j)
+}
+```
 
 
-### While
+### while
+
+```{r while_example, message=FALSE, warning=FALSE}
+i <- 1
+
+while (i < 5) {
+  print(i)
+  i <- i + 1
+}
+```
 
 
-### if
+### if-else
+
+```{r if_example, message=FALSE, warning=FALSE}
+i <- 6
+
+if (i > 3) {
+  print('Yes')
+} else {
+  print('No')
+}
+```
 
 
 ### function
 
+```{r func_example, message=FALSE, warning=FALSE}
+square <- function(x){
+  squared = x*x
+  return(squared)
+}
 
-## 存取資料
+square(7)
+```
 
-### 讀寫資料
+- for, while, if-else 需要在執行前先建立物件
+- function在建立物件前要完成
 
+### 比對數值
 
-### 比對運算子
+廻圈與函式需要透過"比對"，設定執行程式碼的條件：
 
+|功能|程式碼範例|
+|---|---|
+|等於| `a==b` |
+|不等於| `a!=b` |
+|大於| `a>b` |
+|小於| `a<b` |
+|大於或等於| `a>=b` |
+|小於或等於| `a<=b` |
+|等於 NA| `is.na(a)` |
+|等於 null| `is.null(a)` |
+
+**只要兩項物件資料結構相同，都能比對！**
+
+## 二維以上的資料結構
+
+定義：需要使用兩套數值/向量索引資料內數值的結構。
 
 ### 矩陣
+
+以[對角矩陣](https://zh.wikipedia.org/wiki/%E5%B0%8D%E8%A7%92%E7%9F%A9%E9%99%A3)m做範例:
+
+```{r}
+m <- matrix(c(1:3,c(2,1,6),c(3,6,1)),nc=3)
+m
+n <- 0:2
+n
+```
+
+索引矩陣內數值
+
+```{r}
+m[2,] ## 取得第2列數值
+m[,1] ## 取得第1欄數值
+m[2,3] ## 取得第 2 列第 3 欄數值
+```
+
+矩陣運算
+
+```{r}
+t(m) ## 轉置矩陣
+m %*% n ## 矩陣內積
+solve(m,n) ## 解聯立方程式, m必須是對角矩陣
+```
 
 
 ### 字串
 
+定義：由兩個以上字符組合的資料。例如姓名~ John, Rebeca
+
+字串可以是向量數值，例如問卷選項。依處理需要，經常會合併、分割或取代字串內容。
+
+```{r}
+x <- c("Donald", "Trump")
+y <- c("Joe","Biden")
+paste(x,y,sep = "")
+paste(x, collapse ='')
+grep(pattern="D", x)
+toupper(x)
+tolower(x)
+nchar(x)
+```
+
 
 ### 因子
 
+定義: 索引資料框架的欄位，統計函式必須使用因子分組資料。
+
+```{r}
+x<-rep(1:4,each=25) 
+factor(x)  ## 將向量轉換成因子，設定層次(levels)及層次順序
+x<-1:100
+cut(x,4)   ## 指定切割區間數，將向量轉換成因子
+```
 
 
 ### 資料框架
 
+定義: 包含至少一筆數值數量相同的向量
 
+```{r}
+df <- data.frame(x = 1:10, y = letters[1:10])
+df$x     ## 索引x欄位數值
+df[[2]]  ## 索引第2欄數值
+
+df[,2]   ## 索引第2欄數值
+df[2,]   ## 索引第2列數值
+df[2,2]  ## 索引第2欄,第2列數值
+
+head(df) ## 列印首6列數值
+```
+
+有需要時，資料框架能依欄或依列合併其他物件。
+
+```{r}
+z <- runif(10)  ## 製造新欄位資料
+d <- c(11,letters[11],runif(1))  ## 製造新列資料
+df = cbind(df,z)
+df
+df = rbind(df,d)
+df
+```
 
 
 ### 列表
+
+定義: 集合型態及數量不一致的資料
+
+```{r}
+l<-list(x= 1:5,
+        y= c('a','b'),
+        z= df)
+
+l[[2]]      ## 取得第二個物件數值 
+l[3]        ## 取得列表第三個物件名稱與數值
+l$x         ## 取得列表x物件數值
+l['z']      ## 取得列表z物件名稱與數值
+```
 
 
 ## 常用內建函式
 
 ### 數學運算函式
 
+有至少一個欄位的資料，使用數學運算函式能做簡單統計。
+
+```{r}
+x <- runif(10)
+y <- rnorm(10)
+
+log(x)	          ##自然對數  
+exp(x)	          ##自然指數  
+max(x)	          ##最大值
+min(x)	          ##最小值
+round(exp(x), 2)  ##顯示數值到小數點第2位
+signif(log(x), 3) ##小數點第3位起簡寫數值
+quantile(x)       ##百分位數
+rank(x)           ##次序位數
+sum(x)            ##總和  
+mean(x)           ##平均
+median(x)         ##中位數
+var(x)            ##樣本變異數
+sd(x)             ##樣本標準差
+cor(x,y)          ##相關
+```
+
 
 ### 統計函式
+
+預設內建統計函式已經涵蓋基礎統計方法
+
+```{r}
+prop.test(x,seq(10,100,by=10))   ## 分組平均比例顯著性考驗
+t.test(x,y)                      ## 獨立分組平均數 t檢定
+group <- factor(rep(c("a","b","c"),c(3,3,4) ))
+pairwise.t.test(x,group)    ## 計算t檢定的相依樣本變數相關性
+
+aov.1 <- aov(x~group)                ## 變異數分析
+lm.1 <- lm(x~group)                 ## 線性模型
+glm.1 <- glm(x~group)                ## 通用線性模型
+
+summary(aov.1)                   ## 簡報變異數分析, 線性模型, 通用線性模型
+```
 
 
 ### 機率分佈函式
 
+使用機率分佈函式製造符合假設的模擬資料，預覽研究設計的合理性與可執行程度。
+
+```{r}
+##常態分佈
+norm_data <- rnorm(100)   ## 製造隨機變數
+pnorm(norm_data)          ## 累積機率函數
+dnorm(norm_data)          ## 機率密度函數
+qnorm(pnorm(norm_data))   ## 量數 = 隨機變數
+
+```
+
+比照以上的示範，自由測試[秘訣速查表](../cheatsheets/base-r-TC.pdf)列出的其他機率函式：卜瓦松分佈,二項分佈,均勻分佈。
+
+
 ### 繪圖函式
+
+有上百筆資料時，視覺化是理解資料的最佳方式
+
+```{r}
+plot(dnorm(norm_data)~norm_data)  ## 視覺化機率密度函數
+plot(pnorm(norm_data)~qnorm(pnorm(norm_data)))  ## 視覺化累積機率函數
+```
+
+比照以上的示範，嘗試視覺化[秘訣速查表](../cheatsheets/base-r-TC.pdf)列出的其他機率函式：卜瓦松分佈,二項分佈,均勻分佈。
