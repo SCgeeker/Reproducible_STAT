@@ -1,0 +1,187 @@
+---
+title: '練習08: 可重製科學的資料科學基本功'
+author: "作業作者姓名"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# please do not alter this code chunk
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE,
+                      error = TRUE)
+library("tidyverse")
+```
+
+> 原作者: 格拉斯哥大學心理學系PsyTeachR團隊  
+> 翻譯改編:慈濟大學陳紹慶
+
+
+**完成條件**：根據問題說明編輯以下程式碼區塊(code chunk)並編織(kint)文件。
+
+> **註**: 第8單元需要同時學習機率與統計的數學原理，題目設定僅更動部分初始數值。建議學生自行嘗試解題，遇到困難先搜尋可行解法、找同學或老師討論。儘可能在不看原作解答的條件下完成所有問題。 
+
+## 產生隨機資料
+
+### 第1題
+
+從常態分佈平均值是0，標準差是1的常態分佈生成100個隨機數值存入向量物件`a`。
+
+```{r Q1}
+a <- NULL
+```
+
+### 第2題
+
+將`a`之內的數值加上另一批從常態分佈平均值是0，標準差是1的常態分佈生成的100個隨機數值，所有數值存入向量物件`b`。
+
+```{r Q2}
+b <- NULL
+```
+
+### 第3題
+
+執行相依樣本雙尾t檢定，比較`a` and `b`的差異並輸出結果。
+
+```{r Q3}
+t <- NULL
+
+t # prints results of t-test
+```
+
+## 估計統計考驗力
+
+以下考驗力模擬程序需要執行至少1萬次。
+
+### 第4題
+
+參考第8單元獨立樣本t檢定的示範，估計樣本數為100，顯著水準為.05，相依樣本雙尾t檢定檢測效果量為0.3的樣本能達到的統計考驗力。 
+
+提示：你可以改造[示範](https://psyteachr.github.io/msc-data-skills/sim.html#t-test)中的自建函式`sim_t_ind`。
+
+```{r Q4}
+
+sim_t_ind <- function() {}
+
+power.sim <- NULL
+
+power.sim # prints the value
+
+```
+
+### 第5題
+
+使用`power.t.test()`函式覆驗第4題的演練成果。
+
+```{r Q5}
+power.analytic <- NULL
+
+power.analytic  # prints the value
+```
+
+### 第6題
+
+改造自建函式`sim_t_ind()`的內容，讓這個函式能估計以下案例的統計考驗力。
+
+> 顯著水準為0.05，比較兩組獨立樣本的差異：40個來自平均值是15，標準差是3的常態分佈之隨機數值，與60個來自平均值是19，標準差是3.6的常態分佈之隨機數值。
+
+```{r Q6}
+sim_t_ind <- function() {}
+
+power6 <- NULL
+
+power6 # prints the value
+```
+
+### 第7題
+
+某個測量反應時間的心理學實驗在控制條件測得的平均反應時間是700毫秒，實驗條件測得的平均反應時間會多50毫秒。設定這個結果來自兩組各100人的測試，各組標準差各為100。使用第6題完成的自建函式估計這樣的結果能達到的統計考驗力。
+
+```{r Q7}
+power7 <- NULL
+
+power7 # prints the value
+```
+
+## 卜瓦松分布
+
+[卜瓦松分布](https://zh.wikipedia.org/wiki/%E6%B3%8A%E6%9D%BE%E5%88%86%E4%BD%88)能用來建立某種現象出現頻率的假設之機率模型，例如你的通訊軟體每天都會收到各種迷因圖，有些迷因圖在不上課的日子比平常日子更少收到。事件出現頻率越高，卜瓦松分布會越近似常態分佈，因此研究較少出現的事件，科學家比較喜歡使用卜瓦松分布。
+
+### 第8題
+
+使用`rpois()`設定`lambda`為6，產生1000個隨機數值。用`ggplot()`繪制直方圖，和你所知道的常態分佈比較看看。
+
+```{r Q8}
+pois <- NULL # 1000 random poisson-distributed numbers
+
+ggplot()
+```
+
+
+## 二項分佈
+
+### 第9題
+
+延伸第8單元有關二項分佈的說明與示範，自行挑一個大於10的嘗試數目，繪圖比較二項分佈與常態分佈的樣本差異。
+
+提示：你可以抓二項分佈的成功嘗試機率(`binomial_mean <- trials * prob`)做為要比較的常態分佈平均值，以及平均值乘以事件機率的補數之開平方(`binomial_sd <- sqrt(binomial_mean * (1 - prob))`)做為常態分佈的標準差。
+
+```{r Q9}
+n <- NULL  # use a large n to get good estimates of the distributions
+trials <- NULL
+prob <- NULL
+binomial_mean <- trials * prob
+binomial_sd <- sqrt(binomial_mean * (1 - prob))
+
+# sample number from binomial and normal distributions
+norm_bin_comp <- NULL
+
+# plot the sampled numbers to compare
+ggplot()
+```
+
+## 模擬相關係數的考驗力
+
+R有非常多的資源幫助你自建函式，寫程式碼時一步一步來，當下這一步能正確執行再往前進。
+
+### 第10題
+
+參考第8單元[示範](https://psyteachr.github.io/msc-data-skills/08_simulation.html#bvn)的`bvn()`，創造除了樣本數，還能根據指定的相關係數、兩個變數的平均值及標準差，產生兩個變數的隨機數值之自建函式。這個函式的每個參數要設定預設值。
+
+```{r Q10}
+bvn2 <- function() {}
+
+bvn2() %>% knitr::kable() # prints the table for default arguments
+```
+
+
+### 第11題
+
+以第10題創造的自建函式，設定`n`為100，`rho`為0.35製作兩個變項的隨機樣本。使用`cor.test` 分析樣本間的皮爾森相關係數。
+
+```{r Q11}
+
+```
+
+### 第12題
+
+搭配`purrr::map()`使用第10題的自建函式，產生不同樣本數及相關係數產生的相關係數樣本，繪圖比較不同設定樣本之間的差異。
+
+```{r Q12}
+# set up all values you want to test
+sims <- NULL
+
+ggplot()
+
+```
+
+### 第13題
+
+參考第8單元估計相關係數考驗力的示範，創造自訂函式估計以`cor.test()`分析第10題自建函式產生的隨機樣本，能達到的統計考驗力。
+
+```{r Q13}
+power.cor.test <- function(){}
+```
+
+
+
+**完成以上作業，可執行編織(knit)，提供html檔讓老師與助教確認作業成果。**

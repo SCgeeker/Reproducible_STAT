@@ -1,0 +1,173 @@
+---
+title:  R 基本技能自我測驗
+author: "作業作者姓名"
+---
+
+
+> 原作者: 格拉斯哥大學心理學系PsyTeachR團隊  
+> 翻譯改編:慈濟大學陳紹慶
+
+
+**完成條件**：根據問題說明編輯以下程式碼區塊(code chunk)並編織(kint)文件。
+
+## 載入套件
+
+
+執行任何R腳本幾乎都要載入至少一個套件，這道動作總是放在腳本最前面。
+以下是這份文件的第一個程式碼區塊，就在這裡載入`tidyverse` 與 `readxl`吧。想確認自已的R studio有沒有這些套件，可以切換到右邊的**Packages**子視窗的套件清單，看看有沒存在。如果不在，就在編輯這份文件之前，在Console視窗執行`install.packages("tidyverse")`，就能安裝到你的專案R環境。但是**切記**，任何腳本都不該放`install.packages()`，否則執行速度會變慢，專案環境會越來越亂。
+
+> **註**: 經由邀請連結加入這個工作空間的學生，開啟的專案環境都已經安裝需要的套件。轉換到本機版R studio，就要自已掌握需要安裝的套件。
+
+```{r libraries, echo = TRUE, message = FALSE}
+# TODO: your code for loading libraries goes here
+
+
+```
+
+## 指定物件變數與資料型態
+
+
+尚用的資料型態有數值(numeric)資料(又分成整數integer與浮點數double)，字元(character)，邏輯值(boolean)。
+
+使用**指派運算元**(`<-`)，可將資料指派給任何變數。在以下的程式碼區塊演練這些指派工作：
+
+* 整數5指派給變數`five`
+* 整數2加7的總和指派給變數`two_plus_7`
+* 浮點數3指派給變數`double_three`
+* 將你的姓氏英文拼字小寫指派給變數`lower`
+* 將你的姓氏英文拼字大寫指派給變數`UPPER`
+
+
+```{r variables, echo = TRUE}
+five <- NULL
+two_plus_7 <- NULL
+double_three <- NULL
+lower <- NULL
+UPPER <- NULL
+```
+
+## 比較運算元
+
+
+使用比較運算元`==`, `>`, `<`, `>=`, `<=`等可以比較兩個資料或變數之間的異同，或者何者較大。**切記** `=`的功能相當於`<-`，`==`用於比較兩者是否相等。
+
+
+一行程式碼之內的比較運算元優先於指派運算元，像是`is_equal <- 10 == 5 + 5`會存入邏輯值TRUE到`is_equal`，更改`==`兩邊為不同數值會存入邏輯值FALSE。
+
+
+在以下的程式碼區塊演練這些比較工作：
+
+* `comp_3_eq_5`: 整數3等於整數5?
+* `comp_d_eq_D`: 小寫d等於大寫D?
+* `comp_11_lt_22`: 數值11小於數值22?
+* `comp_five_gte_two_plus_7`: 變數five大於變數two_plus_7?
+
+
+```{r comparison, echo = TRUE}
+comp_3_eq_5 <- NULL
+comp_d_eq_D <- NULL
+comp_11_lt_22 <- NULL
+comp_five_gte_two_plus_7 <- NULL
+```
+
+
+## 組成向量
+
+
+向量是一個或多數相同型態的資料之有序組合。在以下的程式碼區塊演練構成這些向量：
+
+* `mayday`: 五月天樂團成員的綽號
+* `one_to_ten`: 整數1到10
+* `odds`: 整數1到9之內的奇數
+* `V_to_Z`: 內建向量 `LETTERS`的最後五個資料
+
+```{r vector, echo = TRUE}
+mayday <- NULL
+one_to_ten <- NULL
+odds <- NULL
+V_to_Z <- NULL
+```
+
+## 向量運算
+
+在以下的程式碼區塊演練向量運算：
+
+* `by_three`: 向量`one_to_ten`的所有資料各自乘以3
+* `cubics`: 向量`one_to_ten`的所有資料各自計算立方
+* `V_to_Z_1`: 使用函式`paste0()`，將向量`V_to_Z`所有資料換成"V1", "W2", "X3", "Y4", "Z5"。
+
+
+```{r vectorised, echo = TRUE}
+by_three <- NULL
+cubics <- NULL
+V_to_Z_1 <- NULL
+```
+
+## 載入資料
+
+除了從本機的資料夾匯入資料，只要有連結網路，也能透過URL從網站直接載入R專案環境。在下方程式碼區塊演練`tidyverse`的函式，從網站匯入CSV與Excel檔：
+
+* `infmort`: 由URL"https://psyteachr.github.io/msc-data-skills/data/infmort.csv"匯入這份CSV檔
+* `matmort`: 使用`readxl`的函式載入存在於`data`的matmort.xls(請注意檔案的存放路徑)
+
+```{r loading-data, echo = TRUE}
+infmort <- readr::read_csv("https://psyteachr.github.io/msc-data-skills/data/infmort.csv")
+matmort <-  readxl::read_xls("../data/matmort.xls")
+```
+
+## 檢核程式碼
+
+最後這段程式碼區塊是用來檢查前面的演練是否正確。像前兩個單元一樣，編織這份檔案為網頁檔案，就會在之後的段落顯示演練結果"正確"或"不正確"。
+
+```{r check_fnct, include = FALSE}
+check <- function(test) {
+  if (is.character(test)) return(paste("**不正確**:", test))
+  if (length(test)==0) return("**不正確**")
+  ifelse(test, "正確", "**不正確**")
+}
+```
+
+### 指定物件變數與資料型態
+
+* `five`: `r check(five == 5L & typeof(five) == "integer")`
+* `two_plus_7`: `r check(two_plus_7 == 9L & typeof(two_plus_7) == "integer")`
+* `double_three`: `r check(double_three == 3.0 & typeof(double_three) == "double")`
+* `lower`: `r check(tolower(lower) == lower)`
+* `UPPER`: `r check(toupper(UPPER) == UPPER)`
+
+### 比較運算元
+
+* `comp_3_eq_5`: `r check(comp_3_eq_5 == 0)`
+* `comp_d_eq_D`: `r check(comp_d_eq_D == 0)`
+* `comp_11_lt_22`: `r check(comp_11_lt_22 == 1)`
+* `comp_five_gte_two_plus_7`: `r check(comp_five_gte_two_plus_7 == 0)`
+
+
+### 組成向量
+
+* `mayday`: `r check(mayday[1] == "阿信" & mayday[2] == "怪獸" & mayday[3] == "石頭" & mayday[4] == "瑪莎" & mayday[5] == "冠佑")`
+* `one_to_ten`: `r check(sum(one_to_ten == 1:10) == 10)`
+* `odds`: `r check(sum(odds == c(1, 3, 5, 7, 9)) == 5)`
+* `V_to_Z`: `r check(sum(V_to_Z == LETTERS[22:26]) == 5)`
+
+
+### 向量運算
+
+* `by_three`: `r check(sum(by_three == seq(3,30,3))==10)`
+* `cubics`: `r check(sum(cubics == (1:10)^3) == 10)`
+* `V_to_Z_1`: `r check(sum(V_to_Z_1 == c("V1", "W2", "X3", "Y4", "Z5")) == 5)`
+
+### 載入資料
+
+```{r load-check, include=FALSE, message=FALSE}
+infmort2 <- readr::read_csv("https://psyteachr.github.io/msc-data-skills/data/infmort.csv")
+matmort2 <- readxl::read_xls("../data/matmort.xls")
+```
+
+* `infmort`: `r check(dplyr::all_equal(infmort, infmort2))`
+* `matmort`: `r check(dplyr::all_equal(matmort, matmort2))`
+
+
+
+
+**完成以上作業，可執行編織(knit)，提供html檔讓老師與助教確認作業成果。**

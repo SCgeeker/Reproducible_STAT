@@ -1,0 +1,179 @@
+---
+title: '練習6: 可重製科學的資料科學基本功'
+author: "作業作者姓名"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# please do not alter this code chunk
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, error  = TRUE)
+library("tidyverse")
+library("lubridate")
+set.seed(1379) # makes sure random numbers are reproducible
+```
+
+> 原作者: 格拉斯哥大學心理學系PsyTeachR團隊  
+> 翻譯改編:慈濟大學陳紹慶
+
+
+**完成條件**：根據問題說明編輯以下程式碼區塊(code chunk)並編織(kint)文件。
+
+建議逐一執行程式碼區塊檢查是否有錯誤，或結果輸出不符合預期。管道運算元連接的程式碼結尾放置`glimpse()` 或 `print()`有利檢查結果輸出。
+
+> **註**：第6單元練習題是原始資料前期處理，是各種大型資料清理的良好演練材料，源始文本的題目設定不做更動。建議學生自行嘗試解題，遇到困難先搜尋可行解法、找同學或老師討論。儘可能在不看原作解答的條件下完成所有問題。 
+
+## 改造變數欄位並合併資料
+
+### 第1題A
+
+
+首先載入`disgust_scores`，`personality_scores`，`users`三個資料集並存入對應物件，每個資料集都有共同的欄位`user_id`。
+
+```{r ex-1a}
+disgust_scores <- NULL
+personality_scores <- NULL
+users <- NULL
+```
+
+### 第1題B
+
+
+合併`user`的資料到`disgust_scores`資料表單之後。
+
+```{r ex-1b}
+study1 <- NULL
+```
+
+
+### 第1題C
+
+
+計算每位參與者登錄資料時的虛歲，計算結果存入新欄位`age_years`。增加新欄位的資料存入物件`study1_ages`。
+
+```{r ex-1-i}
+study1_ages <- NULL
+```
+
+### 第2題A
+
+
+合併`user`的資料到`disgust_scores`資料表單之前。
+
+```{r ex-2}
+study2 <- NULL
+```
+
+
+### 第2題B
+
+
+計算各種性別的參與者回答人數。計算結果存入新表格物件`study2_by_sex`，表格只有兩個欄位`sex`， `n`。
+
+```{r ex-2-i}
+study2_by_sex <- NULL
+```
+
+
+### 第2題C
+
+進階題：依登錄資料年份計算人數，並將結果繪成統計圖。
+    
+```{r ex-2-a}
+ggplot()
+```
+
+
+### 第3題A
+
+合併`disgust_scores`與`personality_scores`有參與者編號與`user_id`與登錄日期`date`相同的資料到同一個資料集。
+
+```{r ex-3}
+study3 <- NULL
+```
+
+
+### 第3題B
+
+再次合併`disgust_scores`與`personality_scores`，不過只要`user_id`相同。檢查和前一題的結果是否相同？
+    
+```{r ex-3-i}
+study3_nodate <- NULL
+```
+
+
+### 第4題
+
+完整合併`disgust_scores`與`personality_scores`，包括`user_id`與`date`只存在其中一個資料集的紀錄也要合併進來。
+
+```{r ex-4}
+study4 <- NULL
+```
+
+## 過濾不符合的資料再合併
+
+### 第5題
+
+合併`disgust_scores`與`personality_scores`，只限後者`user_id`與`date`與前者一樣的紀錄。
+
+> **註**: 這一題與第3題A一樣，但是使用另一種join函式。
+    
+```{r ex-5}
+study5 <- NULL
+```
+
+    
+### 第6題
+
+根據`users`的資料，找出`disgust_scores`與`personality_scores`都沒有紀錄的參與者，整理到新物件。
+
+> **註**: 需要用管道運算元執行兩個步驟。
+    
+```{r ex-6}
+study6 <- NULL
+```
+
+## 列組合與欄合併
+
+### 第7題
+
+載入另一個參與者資料集`users2`，與`users`組合並存入`users_all`。
+
+```{r ex-7}
+users_all <- NULL
+```
+
+
+### 第8題
+
+兩個參與者資料集有多少筆紀錄是一致的？
+    
+```{r ex-8}
+both_n <- NULL
+```
+
+### 第9題
+
+兩個參與者資料集有多少筆紀錄是不一致的？
+
+```{r ex-9}
+unique_users <- NULL
+```
+
+### 第10題
+
+有多少筆紀錄只在`users`，但是不在`users2`？
+
+```{r ex-10}
+first_users <- NULL
+```
+
+### 第11題
+
+有多少筆紀錄只在`users2`，但是不在`users`？
+
+```{r ex-11}
+second_users <- NULL
+```
+
+
+**完成以上作業，可執行編織(knit)，提供html檔讓老師與助教確認作業成果。**

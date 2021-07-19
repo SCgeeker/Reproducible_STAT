@@ -1,0 +1,251 @@
+---
+title: '練習05: 可重製科學的資料科學基本功'
+author: "作業作者姓名"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# please do not alter this code chunk
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE, 
+                      error = TRUE)
+library(tidyverse)
+library(ukbabynames)
+
+# install the class package dataskills to access built-in data
+# devtools::install_github("psyteachr/msc-data-skills)
+# or download data from the website
+# https://psyteachr.github.io/msc-data-skills/data/data.zip
+```
+
+> 原作者: 格拉斯哥大學心理學系PsyTeachR團隊  
+> 翻譯改編:慈濟大學陳紹慶
+
+
+**完成條件**：根據問題說明編輯以下程式碼區塊(code chunk)並編織(kint)文件。
+
+建議逐一執行程式碼區塊檢查是否有錯誤，或結果輸出不符合預期。管道運算元連接的程式碼結尾放置`glimpse()` 或 `print()`有利檢查結果輸出。
+
+
+## 美國新生兒姓名資料庫
+
+運用這件專案安裝的套件`babynames`提供的美國歷年新生兒出生資料`babynames`，在以下程式碼區塊轉換為tibble格式，存入物件`usab`。使用這份資料演練第1到13題，所有問題儘可能使用管道運算元在一行程式碼解決。
+
+```{r usab}
+# do not alter this code chunk
+usab <- as_tibble(babynames::babynames) # convert to a tibble
+```
+
+
+### 第1題
+
+這份資料有多少筆紀錄？
+
+```{r Q1}
+nrecords <- NULL
+```
+
+### 第2題
+
+移除欄位`prop`。
+
+```{r Q2}
+norank <- NULL
+```
+
+### 第3題
+
+這份資料的出生年範圍是那兩年之間？使用`summarise`計算最早與最晚的年份，再存入欄位`minyear` 與 `maxyear`。
+
+```{r Q3}
+birth_range <- NULL
+```
+
+### 第4題
+
+將命名為Dick的新生兒資料分離出來存到新表單。
+
+```{r Q4}
+dick <- NULL
+```
+
+### 第5題
+
+
+將資料集先依性別升冪排序，再以出生年降冪排序，最後依比例(prop)降冪排序。
+
+```{r Q5}
+sorted_babies <- NULL
+```
+
+### 第6題
+
+使用進位函數`floor()`製造新欄位`decade`，儲存出生年的年代(如1990, 2000, 2010)。
+
+```{r Q6}
+usab_decade <- NULL
+```
+
+### 第7題
+
+
+將1995年到2007年間出生，命名為Jerry的新生兒資料分離出來存到新表單。
+
+
+```{r Q7}
+jerry <- NULL
+```
+
+
+### 第8題
+
+計算資料庫裡有多少種名字？請將計算得出的總數存到`distinct_names`。
+
+```{r Q8}
+distinct_names <- NULL
+```
+
+### 第9題
+
+將1990年之前與2005年之後出生，命名為Murphy的女性新生兒資料分離出來存到新表單。
+
+
+```{r Q9}
+murphy <- NULL
+```
+
+### 第10題
+
+
+美國歷年來有多少新生兒被取命Emma？請計算總數存入`emily`。 
+
+```{r Q10}
+emily <- NULL
+```
+
+### 第11題
+
+美國1940年之前出生的男女新生兒分別有多少種名字？
+
+```{r Q11}
+names_per_sex <- NULL
+```
+
+### 第12題
+
+美國歷年來最不受歡迎的新生兒名字是什麼？
+
+```{r Q12}
+most_unpopular <- NULL
+```
+
+### 第13題
+
+繪製統計圖呈現美國1949年之後，每年男女新生兒出生人數的趨勢。
+
+```{r Q13}
+babies_per_year <- NULL
+```
+
+## 任務：挑出指定的變數欄位
+
+載入`dataskills::personality`資料集。
+
+挑出參與者編號在3000及7000之內的欄位並存入物件。
+
+```{r SH1}
+id_only <- NULL
+```
+
+挑出參與者編號及外向性(Extroversion)的欄位並存入物件。
+
+```{r SH2}
+openness <- NULL
+```
+
+挑出參與者編號及各人格向度的最後一題並存入物件。
+
+```{r SH3}
+q1 <- NULL
+```
+
+
+## 新增變數函式(Window fuctions)
+
+以下程式碼區塊將生成10位參與者填答20道5點李克特量表的資料，填答資料存於欄位`dv`。
+
+> 註：虛擬資料每次執行或編織內容都會不同，如果要固定輸出結果，可移除`set.seed(10)`之前的註釋記號“#”。
+
+
+```{r window-setup}
+#set.seed(10)
+
+fake_data <- tibble(
+  subj_id = rep(1:10, each = 20),
+  trial = rep(1:20, times = 10),
+  dv = sample.int(5, 10*20, TRUE)
+)
+```
+
+### 第14題
+
+參考第5單元有關"offset function"的示範，檢查每位參與者每隔一題給相同答案的次數。例如第1題到第5題的作答是1,2,1,4,1，第3與第5題與第1題作答相同，總計有2次。
+
+```{r Q14}
+repeated_data <- NULL
+```
+
+### 第15題
+
+將符合第14題作答狀況大於且等於5次的參與者資料挑出來，存到物件`too_many_repeats`。
+
+```{r Q15}
+too_many_repeats <- NULL
+```
+
+
+## 進階問題
+
+以下問題不只有一種解法。如果你已經按部就班學習到這裡，你應該能自行判斷寫的程式碼是否正確。如果不確定，可以找同學或老師討論。
+
+### 第16題
+
+載入資料集`family_composition`。
+
+載入資料集`sqdata`，這一題延續第4單元練習題演練**樞紐功能函式**與**整理變數欄位函式**的成果。
+
+
+挑選題號以"R"結尾的任何一題，計算各種性別`sex`在這一題的每個回答項目的人數總共有多少，繪製統計圖呈現。請寫出至少兩段程式碼。
+
+```{r Q16a}
+sib6 <- NULL
+
+ggplot(sib6)
+```
+    
+```{r Q16b}
+sib6 <- NULL
+
+ggplot(sib6)
+```
+
+
+### 挑戰題：第17題
+
+> 註：這一題延續第4單元練習題的挑戰題，原始題目內容不做改編。建議學生遇到困難先搜尋網路資訊，或者找同學或老師討論。
+
+載入資料集`eye_descriptions`，這一題延續第4單元練習題的挑戰題演練成果。
+
+建立前十大描述字詞的表格，如果找出的字詞沒有實際意義，像是冠詞"a"，可用程式碼移除或轉換。
+    
+```{r Q17}
+eyes <- NULL
+```
+
+```{r Q17-print, results='asis'}
+# displays the table in a nice format
+knitr::kable(eyes) 
+```
+
+
+**完成以上作業，可執行編織(knit)，提供html檔讓老師與助教確認作業成果。**

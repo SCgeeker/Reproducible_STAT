@@ -1,0 +1,108 @@
+---
+title: '練習01: 可重製科學的資料科學基本功'
+author: "作業作者姓名"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# please do not alter this code chunk
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, error = TRUE)
+```
+
+> 原作者: 格拉斯哥大學心理學系PsyTeachR團隊  
+> 翻譯改編:慈濟大學陳紹慶
+
+
+**完成條件**：根據問題說明編輯以下程式碼區塊(code chunk)並編織(kint)文件。
+
+## Console視窗操作練習
+
+在Console視窗逐行輸入以下程式碼，觀察執行結果:
+
+```
+1 + 2
+a <- 1
+b <- 2
+c <- 3
+a + b
+c - a
+```
+
+切換到`環境`(Environment)子視窗，觀察執行後出現多少`物件`(Object)。將以下程式區塊的物件`how_many_objects`右邊的 NULL 換成實際數目。
+
+```{r Q1}
+how_many_objects <- NULL
+```
+
+
+## 函式(function)的語法
+
+**提示**: 在`Help`子視窗*搜尋框*輸入函式名稱可得到使用說明。
+
+使用函式 `rnorm()` 產生15個來自平均值是700，標準差是25的常態分佈的隨機數值。將這些數值存入物件`random_vals`。
+
+```{r Q2}
+random_vals <- NULL
+```
+
+
+以下物件`the_values`有個缺失值`NA`，請找出計算`the_values`平均值的函式參數要如何設定，才能讓存入物件`the_mean`的數值是實數。
+
+```{r Q3}
+the_values <- c(1,1,1,2,3,4,6,8,9,9, NA) # do not alter this line
+the_mean   <- NULL
+```
+
+
+使用函式`seq()`製造向量`c(0, 10, 20, 30, 40, 50 ,60, 70 ,80 ,90, 100)`，存入物件`tens`。
+從實數0到100均分五段要設定4個截斷值`c(0, 25, 50, 75, 100)`，使用函式`seq()`設定將從實數0到100均分21段的截斷值，存入物件`bins20`。
+
+```{r Q4}
+tens  <- NULL
+bins20 <- NULL
+```
+
+使用函式`paste()`在你的"姓"與"名"中間置入逗號(",")，輸出的字串存入物件`my_name`。
+
+```{r Q5}
+my_name <- NULL
+```
+
+
+## 安裝套件
+
+
+依照電子書的指引自行從CRAN伺服器安裝套件"fortunes"，並在以下程式區塊留下你安裝套件的程式碼。不過，要在這行程式碼前面加上註解記號(#)，讓你在編織文件時不會執行這行程式碼。
+
+```{r Q6}
+# 下一行安裝程式碼不執行
+
+```
+
+
+以下區塊內的程式碼有誤，嘗試不用載入套件，讓這行程式碼正確執行。
+
+```{r Q7}
+fortune()
+```
+
+
+
+## 小專案
+
+自已在工作空間裡創建一個專案並命名"website"。
+
+## 製造並編繹Rmarkdown文件
+
+在"website"專案裡創建一份Rmarkdown文件，命名"index.Rmd"。編輯文件的方法可參考https://markdown.tw/ 
+根據以下說明編輯文件內容:
+
+* 寫一段文字介紹你有興趣的知識主題
+* 列出一份與主題有關的網站清單
+* 加入一張相關的圖片
+* 加入一段程式碼區塊呈現`fortunes::fortune()`的輸出
+* 編織這份文件產生網頁檔
+
+> 完成後可設定網頁為公開，將網址分享到社群平台給朋友欣賞。
+
+**完成以上作業，可執行編織(knit)，提供html檔讓老師與助教確認作業成果。**

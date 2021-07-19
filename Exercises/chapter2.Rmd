@@ -1,0 +1,238 @@
+---
+title: '練習02: 可重製科學的資料科學基本功'
+author: "作業作者姓名"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# please do not alter this code chunk
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, error = TRUE)
+library(tidyverse)
+library(readxl)
+# install the class package dataskills to access built-in data
+# devtools::install_github("psyteachr/msc-data-skills)
+# or download data from the website
+# https://psyteachr.github.io/msc-data-skills/data/data.zip
+```
+
+> 原作者: 格拉斯哥大學心理學系PsyTeachR團隊  
+> 翻譯改編:慈濟大學陳紹慶
+
+**完成條件**：根據問題說明編輯以下程式碼區塊(code chunk)並編織(kint)文件。
+
+
+## 載入已安裝資料集(dataset)
+
+以一行程式碼載入並列出`datasets`套件包裝的所有資料集。
+
+```{r Q1}
+# put code here
+
+```
+
+
+以一行程式碼載入`ToothGrowth`資料集
+
+```{r Q2}
+# put code here
+# 
+```
+
+
+以一行程式碼將 `ToothGrowth` 資料集轉換為tibble格式，並存入物件`TG`.
+
+```{r Q3}
+TG <- NULL
+```
+
+
+## 由外部CSV檔案匯入資料
+
+演練資料已經存於`data`資料夾，使用`readr::read_csv()`，以一行程式碼匯入"infmort.csv"
+
+
+```{r Q4}
+Infant_Mortal <- read_csv("../data/")
+```
+
+再一次使用`readr::read_csv()`匯入"infmort.csv"，這次嘗試匯入時不要匯入`Year`欄位的資料。
+
+```{r Q5}
+Infant_Mortal_skip <- NULL
+```
+
+
+計算第一次匯入`Infant_Mortal`的資料有多少列(row)與欄(col)？計算結果存入程式區塊的物件。
+
+```{r Q6}
+Infant_Mortal_rows <- NULL
+Infant_Mortal_cols <- NULL
+```
+
+## 由外部Excel檔案匯入資料
+
+使用第2單元建議的函式，分別以一行程式碼匯入"data/stroop.csv"並存入`stroop1`，以及匯入"data/stroop.xlsx"並存入`stroop2`。
+
+```{r Q7a}
+stroop1 <- NULL
+stroop2 <- NULL
+```
+
+使用`glimpse()`預覽匯入`stroop1`與`stroop2`的資料內容，在以下指示欄位裡寫出你觀察到的差異。
+
+```{r Q7b}
+# 預覽資料內容
+
+```
+
+> （在這裡寫出你的觀察）
+
+根據觀察更改匯入"data/stroop.xlsx"的函式參數，以一行程式碼匯入`stroop2b`，再預覽資料內容，確認每一個欄位的資料型態都與`stroop1`一致。
+
+```{r Q8, message=FALSE, warning=FALSE}
+stroop2b <- read_xlsx("../data/stroop.xlsx", ...)
+glimpse(stroop2b)
+```
+
+
+## 製造資料表單(data table)
+
+自建一個tibble表單，舉出你認識的兩位同學姓名、年齡與參加的社團，分別存入`name`, `age`,  `group`等三個欄位。
+
+```{r Q9}
+people <- NULL
+```
+
+比照以下的表格範例，在下方程式碼區塊使用最多四行程式碼，製造出內容一致的tibble表單。這個題目可以演練`rep()`的使用技巧。
+
+ID |  A | B   | C
+--|-----|-----|---
+1	| A2	| B2	| C3	
+2	| A2	| B1	| C3	
+3	| A2	| B2	| C3	
+4	| A2	| B1	| C3	
+5	| A1	| B2	| C4	
+6	| A1	| B1	| C4	
+7	| A1	| B2	| C4	
+8	| A1	| B1	| C4
+
+```{r Q10}
+my_tbl <- NULL  
+```
+
+## 資料型態的運用方法
+
+按照以下指示，在程式碼區塊內填入正確的數值內容。
+
+* `two_int` 整數(integer)
+* `two_dbl` 浮點數(double)
+* `two_chr` 文字(character)
+
+```{r Q11}
+two_int <- NULL
+two_dbl <- NULL
+two_chr <- NULL
+```
+
+
+程式碼區塊裡的物件`F_log`, `F_chr`, `F_int`, `F_dbl`預定填入邏輯值(logical)，文字，整數，浮點數。請分別填入等於`FALSE`的資料。
+
+```{r Q12}
+F_log <- NULL
+F_chr <- NULL
+F_int <- NULL
+F_dbl <- NULL
+```
+
+檢查填入的內容是否正確：
+
+```{r Q12-check}
+# these should all evaluate to TRUE
+c(
+  F_log == FALSE,
+  F_chr == FALSE,
+  F_int == FALSE,
+  F_dbl == FALSE,
+  is.logical(F_log),
+  is.character(F_chr),
+  is.integer(F_int),
+  is.double(F_dbl)
+)
+```
+
+
+## 向量(vector)與列表(list)存放資料的格式
+
+製造一個包含三個數字2,4,8的向量。
+
+```{r Q13}
+threes <- NULL
+```
+
+
+R內存環境有既存向量`letters`包括26個英文字母，參考第2單元裡的範例，在以下程式碼區塊拼出'dog'。
+
+```{r Q14}
+dog <- NULL
+```
+
+
+R內存函式`colors()`可輸出繪圖函式能展現的色彩代號，請列出是天藍色(skyblue)的所有代號存入物件`col_skyblue`。再以一行程式碼計算有多少天藍色的代號並存入物件`col_skyblue_length`。
+
+
+```{r Q15}
+col_skyblue <- NULL
+col_skyblue_length <- NULL
+```
+
+
+
+製造一個自訂資料表格物件`table1`，其中至少有四個變數欄位，第2單元提到的資料型態(邏輯值，文字，整數，浮點數)都要出現。再將每個欄位的資料型態，存入列表物件`col_types`。
+
+```{r Q16}
+table1 <- NULL
+col_types <- NULL
+```
+
+
+## 向量的運算
+
+製造向量物件`x`包含-100到100，再製造向量物件`y`包含`x`所有數值的3次方。最後以程式碼`plot(x, y)`繪製兩個向量之間的關係。
+
+```{r Q17}
+x <- NULL
+y <- NULL
+```
+
+
+製造向量物件`t`包含0到1000之間相隔0.5的所有數值。再製造向量物件`x`是`t`的餘弦函數值(cos)，向量物件`y`是`t`的正弦函數值(sin)。繪圖呈現`x`與`y`之間的關係。
+
+```{r Q18}
+t <- NULL
+x <- NULL
+y <- NULL
+```
+
+
+R內建機率分佈函數 `runif(n, min, max)`，其中的參數`n`決定產生多少隨機數值，`min`與`max`表示隨機數值的最小值與最大值。分別設定為0與1的條件下，生產的隨機數值相當於從$\mu = 0$的資料母群，測量得到$\mu \neq 0$的結果之機率值。也就是虛無假設成立的p值。請依照以下指示製造四個物件：
+
+* `pvals`: 使用`runif()`製造10000個p值。
+* `is_sig`: 對應`pvals`的邏輯值。`pvals`內存的p值小於.01為`TRUE`，大於.01為`FALSE`。
+* `sig_vals`: 運用`is_sig`從`pvals`挑出p值小於.01的p值，存入這個物件。
+* `prop_sig`: 使用以上物件，計算10000個p值小於.01的比例。
+
+完成程式碼區塊並確定能正確執行後，在Console視窗執行十幾次，觀察`prop_sig`的數值變化。
+
+```{r Q19}
+set.seed(8675309) # ensures you get the same random numbers each time you run this code chunk
+
+pvals    <- runif(10000)
+is_sig   <- NULL
+sig_vals <- NULL
+prop_sig <- NULL
+hist(pvals,main="10000次無效結果的p值分佈", xlab="p值", ylab = "結果次數總計")
+```
+
+> (在此說明prop_sig與.01的關係)
+
+**完成以上作業，可執行編織(knit)，提供html檔讓老師與助教確認作業成果。**

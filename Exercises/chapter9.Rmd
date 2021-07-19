@@ -1,0 +1,156 @@
+---
+title: '練習09: 可重製科學的資料科學基本功'
+author: "作業作者姓名"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# please do not alter this code chunk
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE,
+                      error = TRUE)
+library("broom")
+library("tidyverse")
+```
+
+> 原作者: 格拉斯哥大學心理學系PsyTeachR團隊  
+> 翻譯改編:慈濟大學陳紹慶
+
+
+**完成條件**：根據問題說明編輯以下程式碼區塊(code chunk)並編織(kint)文件。
+
+## `五大人格` 資料集
+
+內建的`dataskills::personality_scores`存有15000筆五大人格測驗的做答資料，學過性格心理學的學生應該知道這份測驗。
+
+### 第1題
+
+使用ggplot2繪圖函式繪製橫軸是“外向性”(Ex)，縱軸是“經驗開放性”(Op)的散佈圖。留意資料點過度重疊導致呈現不清晰。
+
+```{r Q1}
+ggplot()
+```
+
+
+### 第2題
+
+參考第9單元“Linear Regression”的解說與示範，建立以“外向性”預測“經驗開放性”的線性模型，並存入`personality_mod`。程式碼區塊最後輸出線性模型的摘要資訊。
+
+```{r Q2}
+
+personality_mod <- NULL
+
+summary(personality_mod) #print out the model summary
+```
+
+
+### 第3題
+
+使用ggplo2函式繪製第2題`personality_mod`的殘差直方圖。
+
+```{r Q3}
+residuals <- NULL
+
+ggplot()
+```
+
+
+### 第4題
+
+以tibble格式包裝二位受測者的“外向性”分數，設定分別是1.52分與3.26分，預測“經驗開放性”的得分並存入`personality_pred`。
+
+
+```{r Q4}
+personality_pred <- NULL
+
+personality_pred # print the predicted values
+```
+
+
+## 運用線性模型模擬研究資料
+
+### 第5題
+
+> **註**： 以下使用`$`包夾起來的文字符號是Latex代碼，只要編織文件就能從生成的html網頁看到效果。或者將游標移動到該段符號，也能看到編織效果。
+
+線性迴歸模型的數學表示式如下：
+
+$Y_i = \beta_0 + \beta_1 X_i + e_i$
+
+在以下程式碼區塊建立從載距是2，斜率是-5的線性迴歸模型產生20個Y值。根據數學表示式，還需要設定每個Y值有殘差($e_i$)，在此設定每個殘差來自平均數為0，變異數是$\sigma^2 = 4$的常態分佈之隨機數值。數學表示式的$X$是包含正整數1到20的向量，依照表示式合成`Yi`的所有數值。(提示：標準差是變異數的*開根號*，製造殘差的隨機數值時要注意)
+
+
+```{r Q5}
+X   <- NULL
+err <- NULL
+Yi  <- NULL
+
+Yi # print the values of Yi
+```
+
+## 進階問題
+
+### 第6題
+
+創造能由自訂的線性迴歸模型產生模擬資料的自建函數。
+
+$Y_i = \beta_0 + \beta_1 X_i + e_i$
+
+自建函數的參數要能指定樣本數量(`n`)， 載距(`b0`)， 迴歸效果 (`b1`)，預測變項樣本的平均值與標準差(`X_mu` , `X_sd`)，以及殘差的標準差(`err_sd`)。這個自建函數要能輸出tiddle格式的資料表單，列數同樣本數量，欄位有`id`, `X` 與 `Y`。
+
+```{r Q6}
+
+sim_lm_data <- function(n){
+  #edit this function
+}
+
+
+dat6 <- sim_lm_data(n = 10) # do not edit 
+
+knitr::kable(dat6) # print table
+```
+
+### 第7題
+
+
+使用第6題的自建函數設定載距150，迴歸效果0.7，預測變項樣本的平均值為0，標準差為1.5，殘差標準差為3的線性模型。以此設定生成12000虛擬資料。
+
+使用`lm()`分析虛擬資料。指出報表中的`b0` 與 `b1`估計值。如果更改設定會有什麼變化？
+
+```{r Q7}
+
+dat7 <- NULL
+
+mod7 <- NULL
+
+summary(mod7) # print summary
+
+```
+
+
+> (在此寫下你的觀察)
+
+### 第8題
+
+使用第6題的自建函式創造能估計統計考驗力的自建寫式（提示：類似第8單元，使用`broom::tidy()`累計每次分析結果的p值）。測試條件：100位受測者，載距150，迴歸效果0.7，預測變項樣本的平均值為0，標準差為1.5，殘差標準差為3，以及顯著水準為0.05。
+
+```{r Q8}
+power <- NULL
+
+power # print the value
+```
+
+### 第9題
+
+根據第8題的測試條件，維持同樣的受測者人數及顯著水準，估計迴歸效果為0時能達到的統計考驗力。
+
+```{r Q9}
+false_pos <- NULL
+
+false_pos # print the value
+```
+
+
+> (第8及第9題多改幾套測試條件，觀察統計考驗力有什麼變化)
+
+**完成以上作業，可執行編織(knit)，提供html檔讓老師與助教確認作業成果。**

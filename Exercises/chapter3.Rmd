@@ -1,0 +1,209 @@
+---
+title: '練習01: 可重製科學的資料科學基本功'
+author: "作業作者姓名"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# please do not alter this code chunk
+knitr::opts_chunk$set(echo = FALSE, 
+                      warning = FALSE,
+                      message = FALSE, 
+                      error = TRUE)
+library(tidyverse)
+library(cowplot)
+
+# install the class package dataskills
+# devtools::install_github("psyteachr/msc-data-skills)
+# or download data from the website
+# https://psyteachr.github.io/msc-data-skills/data/data.zip
+```
+
+
+> 原作者: 格拉斯哥大學心理學系PsyTeachR團隊  
+> 翻譯改編:慈濟大學陳紹慶
+
+
+**完成條件**：根據問題說明編輯以下程式碼區塊(code chunk)並編織(kint)文件。
+
+首先產生三種各100隻寵物犬的隨機體重數值，單位為公斤。
+
+> **註1**: 第3單元練習題皆為繪圖，源始文本的題目設定不做更動。建議學生自行嘗試解題，遇到困難先搜尋可行解法、找同學或老師討論。儘可能在不看原作解答的條件下完成所有問題。 
+
+> **註2**: 目前Rstudio cloud輸出的HTML或PDF文件內圖表有中文字均無法正常顯示，因此練習題的圖表內文字均為英文。如果要在本機版Rstudio演練中文化統計圖，相關設定可參考[廖永賦的簡報](https://yongfu.name/2019-fju-rmd-talk/slide/#1)。
+
+```{r dogs}
+# do not edit this chunk
+# dog weights estimated from http://petobesityprevention.org/ideal-weight-ranges/
+
+set.seed(0) # makes sure random numbers are reproducible
+
+dogs <- tibble(
+  breed = as.factor(rep(c("beagle", "boxer", "bulldog"), each = 100)),
+  weight = c(
+    rnorm(100, 10, 2),
+    rnorm(100, 30.5, 6.5),
+    rnorm(100, 22.5, 2.5)
+  )
+)
+
+plot(x=dogs$breed,y=dogs$weight)
+```
+
+
+## 小提琴圖(Violin Plot)
+
+使用`ggplot()`繪製寵物犬資料的小提琴圖。必有的設定是x軸是品種(`breed`)，y軸是體重(`weight`)，每個品種的圖塊色彩設定為50%透明白色，邊界以不同色彩區分；不顯示圖例(legend)。
+
+```{r exercise-violin}
+dog_violin <- NULL
+
+dog_violin # prints the plot below
+```
+
+
+## 箱形圖(Boxplot)
+
+使用`ggplot()`繪製寵物犬資料的箱形圖。必有的設定是x軸是品種(`breed`)，y軸是體重(`weight`)，每個品種的圖塊色彩設定為50%透明白色，邊界以不同色彩區分；不顯示圖例(legend)。
+
+```{r exercise-boxplot}
+dog_boxplot <- NULL
+
+dog_boxplot # prints the plot below
+```
+
+## 密度圖(Density plot)
+
+使用`ggplot()`繪製寵物犬資料的密度圖。必有的設定是x軸是品種(`breed`)，y軸是體重(`weight`)，每個品種的圖塊色彩設定為50%透明白色，邊界以不同色彩區分；不顯示圖例(legend)。
+
+```{r exercise-density}
+dog_density <- NULL
+
+dog_density # prints the plot below
+```
+
+
+## 柱狀圖(Column Plot)
+
+
+使用`ggplot()`及參數`stat_summary`繪製寵物犬資料的柱狀圖。必有的設定是x軸是品種(`breed`)，y軸是體重(`weight`)，在每個品種的柱子頂端繪製1個標準差的誤差線，每個品種的圖塊色彩設定為50%透明白色，邊界以不同色彩區分；不顯示圖例(legend)。
+
+
+```{r exercise-column}
+dog_column <- NULL
+
+dog_column # prints the plot below
+```
+
+## 並列統計圖(Grid)
+
+使用`cowplot()`並列以上四種統計圖。
+
+```{r exercise-grid}
+dog_grid <- NULL
+
+dog_grid # prints the plot below
+```
+
+## 更改繪圖預設值(Changing defaults)
+
+將以上四件繪圖進行改造並匯出存檔。
+
+1. 更改四件繪圖的x軸與y軸標題以符合統計圖的特性。如x軸標題改成"Breed of Dog" 或 "Weight of Dog"，y軸標題改成"Weight of Dog", "Number of Dogs", 或 "Density of Dogs"。
+
+2. 改變三個品種的標示色為"orange", "dodgerblue", "hotpink"。
+
+3. 每件繪圖增加主標題。
+
+4. 每件繪圖各自存檔為"dog_violin.png", "dog_boxplot.png", "dog_density.png", and "dog_column.png" 。
+
+```{r exercise-save}
+# Hint: you can add changes to an existing plot, e.g.:
+# dog_density + xlim(0, 100)
+
+
+```
+
+測試存檔是否成功。
+
+```{r}
+# do not change; displays the images saved above
+knitr::include_graphics("dog_violin.png")
+knitr::include_graphics("dog_boxplot.png")
+knitr::include_graphics("dog_density.png")
+knitr::include_graphics("dog_column.png")
+```
+
+
+## 廻歸線圖(Line plot)
+
+使用載入外部檔案的方法，從`data`資料夾內繪入“disgust_scores.csv”資料集。參考第3單元繪製散佈及迴歸線圖(Scatter-line graph)的範例，以資料裡“morol"與"pathogen"變數繪製廻歸線圖。繪圖必須加上適當的主標題與軸線標題。
+
+  
+```{r exercise-lineplot}
+
+disgust_lineplot <- 
+
+disgust_lineplot # prints the plot below
+```
+
+
+## 相關係數熱像圖(Heatmap)
+
+使用載入外部檔案的方法，從`data`資料夾內繪入“disgust_cors.csv”資料集。參考第3單元繪製相關係數熱像圖的範例繪圖，x軸的標題可能要旋轉才能讓文字不擁擠。
+
+```{r exercise-heatmap}
+disgust_heatmap <- NULL
+
+disgust_heatmap # prints the plot below
+```
+
+## 平面密度圖(2D Density plot)
+
+使用“disgust_cors.csv”資料集，參考第3單元繪製平面密度圖的範例繪圖。其中會用到`stat_density_2d(aes(fill = ..level..), geom = "polygon", n = n)`，最後的n應該要改成一個數字，才能幫助你解讀變項之間的意義。
+
+```{r exercise-density2d}
+disgust_density <- NULL
+
+disgust_density # prints the plot below
+```
+
+
+> **註3**: 原著電子書並未提供以下兩道挑戰題的相關範例，原著作者Lisa DeBruine有錄製[示範影片](https://youtu.be/AnqlfuU-VZk)，有興趣挑戰的學生可以看完之後再來嘗試，或者直接挑戰看看。
+
+## 挑戰題：以資訊關聯性並列統計圖
+
+Create a 3x3 grid of linear line plots from `disgust_scores` with columns representing the x-axis and rows representing the y-axis and assign it to `disgust_grid`. Put a density plot of each variable along the diagonal. Make sure the graphs have appropriate titles and axis labels and that the range of the axes are the same in all graphs.
+
+|              | moral   | sexual  | pathogen |
+|--------------|---------|---------|----------|
+| **moral**    | density | line    | line     | 
+| **sexual**   | line    | density | line     |
+| **pathogen** | line    | line    | density  |
+
+
+```{r exercise-cor-advanced}
+# Hint: set up your 9 separate plots first
+
+disgust_grid <- NULL
+
+disgust_grid # prints the plot below
+```
+
+
+
+## 挑戰題：多重並列圖集(Facets)
+
+Create a grid of plots for the `stroop` dataset from dataskills using faceting. Plot `rt` for each combination of `word` and `ink` to make a 5x5 grid of density plots. Make each plot line the same colour as the ink. For bonus points, make the lines for plots where the ink colour matches the word colour thicker than the other lines.
+
+
+
+```{r facets}
+word_by_ink <- NULL
+
+word_by_ink # prints the plot below
+```
+
+
+
+**完成以上作業，可執行編織(knit)，提供html檔讓老師與助教確認作業成果。**

@@ -1,0 +1,227 @@
+---
+title: '練習04: 可重製科學的資料科學基本功'
+author: "作業作者姓名"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# please do not alter this code chunk
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, error = TRUE)
+library(tidyverse)
+
+# install the class package dataskills to access built-in data
+# devtools::install_github("psyteachr/msc-data-skills)
+# or download data from the website
+# https://psyteachr.github.io/msc-data-skills/data/data.zip
+```
+
+> 原作者: 格拉斯哥大學心理學系PsyTeachR團隊  
+> 翻譯改編:慈濟大學陳紹慶
+
+
+**完成條件**：根據問題說明編輯以下程式碼區塊(code chunk)並編織(kint)文件。
+
+
+建議逐一執行程式碼區塊檢查是否有錯誤，或結果輸出不符合預期。管道運算元連接的程式碼結尾放置`glimpse()` 或 `print()`有利檢查結果輸出。
+
+## 清理資料
+
+The following data table is not tidy. Use `tibble()` or `tribble()`to manually create the tidy version of this table.
+
+以下程式碼區塊裡的內容需要整理，像是相關係數與自由度要分成不同欄位，信賴區間的上下限也要分開。
+
+```{r untidy}
+# do not edit this chunk
+untidy <- tribble(
+  ~id, ~stats, ~p.value, ~conf.int,
+  "A", "r(26) = -0.124", 0.6749,  "[-0.444, 0.292]",
+  "B", "r(19) =  0.254", 0.4600,  "[-0.287, 0.610]",
+  "C", "r(21) =  0.839", 0.0004,  "[ 0.374, 1.088]"
+) %>% print()
+```
+
+請手動將以上輸出結果改成如下一行展示的六個欄位，在下方程式碼區塊寫出能輸出符合此結果的程式碼。
+
+|id|df|r.value|p.value|conf.int.low|conf.int.high|
+
+```{r tidy}
+tidy <- NULL
+```
+
+## 樞紐功能函式(Pivot functions)
+  
+本節的每一個程式碼區塊都有錯誤，請修正錯誤。
+
+### 載入資料
+
+
+載入資料集`sqdata`，存入物件`sq`。
+
+```{r data}
+sq <- dataskills::sq_data
+```
+
+
+### pivot_longer
+
+`sq`的寬表格資料轉換成長表格資料。
+
+```{r pivot-longer}
+sq_long <- sq %>%
+  pivot_longer(  cols=7:31,
+        names_to = "question", 
+               values_to = "scale") %>%
+  glimpse()
+```
+
+
+### pivot_wider
+
+將`sq=sq_long`的長表格資料轉換成寬表格資料
+
+```{r pivot-wider}
+sq_wide <- sq_long %>%
+  pivot_wider(question, scale) %>%
+  glimpse()
+```
+
+
+## 整理變數欄位函式(Tidy verbs)
+
+本節的每一個程式碼區塊都有錯誤，請修正錯誤。
+
+### gather
+
+使用 `gather()`將`sq`的寬表格資料轉換成長表格資料。
+
+```{r gather}
+sq_long <- gather(sq, "question", "scale",Q01:Q25R) %>%
+  glimpse()
+```
+
+
+### separate
+
+使用`separate()`將`sq_long`的`user_id`欄位分成`qmark` 與 `qnumber`。`qmark`的資料只有一個字元。
+
+```{r separate}
+sq_sep <- sq_long %>%
+  separate(user_id, into=c("qmark", "qnumber"), sep = 3) %>%
+  glimpse()
+```
+
+
+### unite
+
+
+使用`unite()`將`user_id`與`sex`合併到新欄位`super_id`，原欄位內的每個數值以"-"組合。
+
+```{r unite}
+sq_unite <- sq %>%   ## 要改成 sq
+  unite(user_id, sex, col="super_id", sep = "-") %>%
+  glimpse()
+```
+
+
+### spread
+
+
+使用 `spread()`將`sq_long`的長表格資料轉換成寬表格資料。
+
+```{r spread}
+sq_wide <- sq_long %>%  ##改成sq_long
+  spread (key=question, value = scale ) %>%
+  glimpse()
+```
+
+
+## 管道運算元(Pipes)
+
+### 使用管道運算元連結程式碼
+
+```{r ex_pipe1}
+# do not edit this chunk
+x <- letters[1:20] # a to t
+y <- rep(x,each=2)      # then repeat them twice
+z <- paste(y,collapse="")    # and then take the sum
+z
+```
+
+將以上程式區塊碼的輸出結果，使用管道運算元在以下程式區塊碼以一行程式碼重新輸出。
+
+```{r pipe1}
+x <- NULL
+```
+
+### 還原管道運算元
+
+
+```{r ex_pipe2}
+# do not edit this chunk
+lager <-  sample(1:20,5) %>% 
+  sqrt() %>% 
+  sum() %>% 
+  print()
+```
+
+將以上程式區塊碼的輸出結果，不使用管道運算元在以下程式區塊碼以4行程式碼重新輸出。
+
+```{r pipe2}
+lager <- NULL
+```
+
+
+## 函式功能比一比
+
+載入資料集`dataskills::disgust`。
+
+將資料集的原來的21個欄位`moral1`~`moral7`,`sexual1`~`sexual7`,`pathogen1`~`pathogen7`標題分割為兩個新欄位的資料：`qtype` = moral, sexual, sexual ; `q_id` = 1,2,3,4,5,6,7。原來各欄位的資料轉換到新欄位`response`。
+
+### 使用樞紐功能函式
+
+使用`pivot`函式系列達成任務。
+
+```{r family-pivot}
+family_pivot <- dataskills::disgust %>%
+  pivot_longer(
+    cols = moral1:pathogen7,
+    names_to = c("qtype","q_id"),
+  #  names_pattern = "([a-z]+)([0-9])",
+    name_seq = -1,
+    values_to = "scale") %>%
+  glimpse()
+
+#t <- c("moral1","moral2","pathogen1","pathogen2")
+
+#df <- data.frame(x = c("moral1","moral2","pathogen1","pathogen2"))
+#df %>% extract(x, c("A","B"),"([a-z]+)([0-9])")
+```
+
+### 使用整理變數欄位函式
+
+使用`gather()`與`seperate()`函式達成任務。
+
+```{r family-tidy}
+family_tidy <- NULL
+```
+
+
+## 挑戰題：整合所學
+
+> 註：這一題需要了解[**正規表示式**](https://5xruby.tw/posts/15min-regular-expression/)才能寫出可完成任務的程式碼，所以不改編原始資料。建議學生遇到困難先搜尋網路資訊，或者找同學或老師討論。
+
+
+整理`dataskills::eye_descriptions`資料集的內容。此資料集包含220位參與者(`user_id`)對50組人眼的描述。參與者給的描述不只一個，同一位參與者給的不同描述以",",";"或"/"區分。
+
+將每組人眼(`t1` ~ `t50`)與參與者對每個人眼的描述轉換為長表格，即製作3個新欄位`face_id`, `description`,`desc_n`分別存入人眼編號，參與者描述文字，參與者描述數目。
+
+提示：字串可用`seperate`的內建參數`sep()`分割，此參數可置入正規表示式像是**"(~|,)+"**。
+  
+```{r eyes}
+eyes <- NULL
+```
+
+
+
+
+**完成以上作業，可執行編織(knit)，提供html檔讓老師與助教確認作業成果。**
