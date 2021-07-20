@@ -31,8 +31,10 @@ if(!require(dplyr)){  ## 如果套件未安裝，先執行安裝再載入
 
 ```{r import_data}
 data(iris)
+head(iris)
 ```
 
+iris 資料有五個變項。
 
 ### 查詢使用說明
 
